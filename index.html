@@ -757,7 +757,7 @@
             // Clear attendance data from Firestore
             function clearAttendanceData() {
                 if (!isAdmin) {
-                    alert('Bạn cần xác thực quyền admin trước');
+                    alert('Hỏi Tân Để Đăng Nhập');
                     return;
                 }
                 
@@ -842,7 +842,7 @@
                 const employeeId = checkOutEmployee.value;
                 
                 if (!employeeId || employeeId === '-- Chọn nhân viên --') {
-                    alert('Vui lòng chọn nhân viên');
+                    alert('Nhân viên');
                     return;
                 }
                 
@@ -860,7 +860,7 @@
                     .then(snapshot => {
                         if (snapshot.empty) {
                             hideLoading();
-                            alert('Nhân viên này chưa chấm công vào hôm nay');
+                            alert('Chưa chấm vào mà đòi chấm ra = -20k');
                             return;
                         }
                         
@@ -869,7 +869,7 @@
                         
                         if (data.checkOut) {
                             hideLoading();
-                            alert('Nhân viên này đã chấm công ra hôm nay');
+                            alert('Chấm rồi em !!!');
                             return;
                         }
                         
@@ -951,7 +951,7 @@
             function verifyAdmin() {
                 const code = adminCodeInput.value;
                 // Simple admin code check - in a real app, use proper authentication
-                if (code === '123456') {
+                if (code === 'thaithae2025@') {
                     isAdmin = true;
                     adminFeatures.classList.remove('d-none');
                     alert('Đã xác thực quyền admin');
