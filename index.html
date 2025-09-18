@@ -146,7 +146,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-business-time me-2"></i>QUẢN LÝ CHẤM CÔNG V10</a>
+            <a class="navbar-brand" href="#"><i class="fas fa-business-time me-2"></i>Chấm Công Thai Thae - minhtan361</a>
             <button class="btn btn-outline-light" id="adminToggle"><i class="fas fa-user-shield me-1"></i>Chế độ Admin</button>
         </div>
     </nav>
@@ -171,7 +171,7 @@
                             <h6 class="mb-3 text-secondary">Đăng nhập để Chấm công</h6>
                             <div class="row g-3 align-items-end">
                                 <div class="col-12"><label class="small">Username</label><input class="form-control" id="loginUsername" placeholder="ví dụ: quynhanh"></div>
-                                <div class="col-12"><label class="small">Mật khẩu</label><input type="password" class="form-control" id="loginPassword" placeholder="mật khẩu"></div>
+                                <div class="col-12"><label class="small">Mật khẩu</label><input type="password" class="form-control" id="loginPassword" placeholder="mật khẩu: thaithae"></div>
                                 <div class="col-12 d-flex gap-2"><button class="btn btn-primary w-100" id="loginBtn">Đăng nhập</button><button class="btn btn-outline-secondary w-100" id="loginByIdBtn">Đăng nhập bằng ID</button></div>
                             </div>
                             <div class="mt-3" id="loginMessage"></div>
@@ -188,7 +188,7 @@
                             <div class="mb-3 text-start">
                                 <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i>2. Xin phép đi muộn (Ghi trước khi chấm công vào):</label>
                                 <textarea class="form-control" id="lateReason" rows="1" placeholder="Em xin đi muộn 30p do bận việc..."></textarea>
-                                <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi muộn (**10.000 VND**) nếu bạn chấm công muộn.</small>
+                                <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi muộn 10.000 VND nếu bạn chấm công muộn.</small>
                             </div>
 
                             <div class="clocking-buttons d-flex gap-3 justify-content-center">
@@ -466,7 +466,7 @@
         document.querySelectorAll('.btn-cancel').forEach(btn=> btn.addEventListener('click', cancelEdit));
     }
     
-    // Logic chỉnh sửa nhân viên (MỚI)
+    // Logic chỉnh sửa nhân viên 
     function deleteEmployee(event){
         if(!isAdmin){alert('Bạn cần quyền admin');return;} 
         const id=event.currentTarget.getAttribute('data-id'); 
@@ -517,7 +517,7 @@
         });
     }
 
-    // Populate Attendance Table (giữ nguyên logic V9)
+    // Populate Attendance Table 
     function populateAttendanceTable(){
         attendanceTableBody.innerHTML='';
         const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0);
