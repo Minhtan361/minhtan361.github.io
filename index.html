@@ -20,7 +20,7 @@
         --success-color: #43a047;
         --danger-color: #e53935;
         --warning-color: #fbc02d;
-        --bg-body: #f5f7fa;
+        --bg-body: #e3e5e9;
         --card-shadow: 0 8px 20px rgba(0,0,0,0.08);
         --radius: 16px;
     }
@@ -141,7 +141,12 @@
         border-color: var(--secondary-color);
         box-shadow: 0 0 0 0.2rem rgba(63,81,181,0.25);
     }
-</style>
+
+    /* Custom styles for new features */
+    .attendance-history-panel {
+        display: none;
+    }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -186,9 +191,9 @@
                                 <select class="form-select" id="shiftSelect"></select>
                             </div>
                             <div class="mb-3 text-start">
-                                <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i>2. Xin phép đi muộn (Ghi trước khi chấm công vào):</label>
+                                <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i>2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):</label>
                                 <textarea class="form-control" id="lateReason" rows="1" placeholder="Em xin đi muộn 30p do bận việc..."></textarea>
-                                <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi muộn 10.000 VND nếu bạn chấm công muộn.</small>
+                                <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn. <span id="lateNotesRemaining"></span></small>
                             </div>
 
                             <div class="clocking-buttons d-flex gap-3 justify-content-center">
@@ -196,7 +201,7 @@
                                 <button class="btn btn-danger btn-lg w-50" id="checkOutBtn"><i class="fas fa-sign-out-alt me-2"></i>Ra</button>
                             </div>
                             <div class="mt-3"><button class="btn btn-secondary btn-sm" id="logoutBtn">Thoát phiên</button></div>
-                            <p class="mt-2 small text-muted">Phiên đăng nhập còn hiệu lực (4 ngày).</p>
+                            <p class="mt-2 small text-muted">Phiên đăng nhập còn hiệu lực 361</p>
                         </div>
                     </div>
                 </div>
@@ -288,6 +293,9 @@
                                         <div class="col-md-4"><label class="small">Phạt sửa/quên công (VND)</label><input type="number" id="editPenalty" class="form-control" placeholder="Phạt 20000"></div>
                                         <div class="col-md-4"><label class="small">Phạt quên chấm ra (VND)</label><input type="number" id="forgotOutPenalty" class="form-control" placeholder="Phạt 20000"></div>
                                     </div>
+                                    <div class="row mb-3 g-2">
+                                        <div class="col-12"><label class="small">Minhtan config:</label><input type="text" class="form-control" id="wifiIpAddress" placeholder="Nhập địa chỉ IP công cộng của quán (ví dụ: 103.111.200.222)"></div>
+                                    </div>
 
                                     <h5 class="mt-4 text-primary"><i class="fas fa-calendar-alt me-1"></i>Danh sách ngày lễ (Lương x2)</h5>
                                     <div class="row mb-3 g-2">
@@ -303,6 +311,31 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 attendance-history-panel" id="personalAttendancePanel">
+                <div class="card">
+                    <div class="card-header bg-secondary-color text-white" style="background-color: var(--secondary-color) !important;">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử Chấm công của bạn</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm small" id="personalAttendanceTable">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Ca</th>
+                                        <th>Giờ vào</th>
+                                        <th>Giờ ra</th>
+                                        <th>Giờ làm</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -349,13 +382,15 @@
     let attendance = [];
     let isAdmin = false;
     let payrollResults = {}; 
-    let isEditingEmployee = {}; // TRẠNG THÁI MỚI: Theo dõi nhân viên đang được chỉnh sửa
+    let isEditingEmployee = {};
+    let loggedInUser = null; 
     
     // UPDATED SETTINGS
-    let settings = { wagePerHour: 0, defaultBonus:0, defaultPenalty:0, latePenalty:10000, editPenalty:20000, forgotOutPenalty:20000, holidays: [] };
+    let settings = { wagePerHour: 0, defaultBonus:0, defaultPenalty:0, latePenalty:10000, editPenalty:20000, forgotOutPenalty:20000, holidays: [], wifiIpAddress: '' };
     
     // QUY TẮC GRACE PERIOD 5 PHÚT (Nghiêm ngặt)
     const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 phút
+    const LATE_NOTE_LIMIT = 2; // Giới hạn số lần dùng ghi chú đi muộn mỗi tuần
 
     // Shift definitions
     const shifts = {
@@ -370,7 +405,7 @@
     const loadingIndicator = document.getElementById('loadingIndicator');
     const employeesTable = document.getElementById('employeesTable').querySelector('tbody');
     const exportEmployee = document.getElementById('exportEmployee');
-    const exportPosition = document.getElementById('exportPosition'); // Thêm tham chiếu đến trường chọn Chức vụ
+    const exportPosition = document.getElementById('exportPosition'); 
     const adminDashboardPanel = document.getElementById('adminDashboardPanel'); 
     const adminVerificationArea = document.getElementById('adminVerificationArea');
     const adminFeatures = document.getElementById('adminFeatures');
@@ -381,6 +416,10 @@
     const computePayrollBtn = document.getElementById('computePayrollBtn');
     const payslipContainer = document.getElementById('payslipContainer');
     const shiftSelect = document.getElementById('shiftSelect'); 
+    const personalAttendancePanel = document.getElementById('personalAttendancePanel');
+    const personalAttendanceTableBody = document.getElementById('personalAttendanceTable').querySelector('tbody');
+    const lateReasonInput = document.getElementById('lateReason');
+    const lateNotesRemainingSpan = document.getElementById('lateNotesRemaining');
 
     // Session handling
     const SESSION_KEY = 'thai_thae_session';
@@ -401,6 +440,146 @@
         return s;
     }
 
+    // --- CHỨC NĂNG MỚI: KIỂM TRA IP WIFI ---
+    async function getPublicIpAddress() {
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            if (!response.ok) {
+                throw new Error('Không thể lấy địa chỉ IP.');
+            }
+            const data = await response.json();
+            return data.ip;
+        } catch (error) {
+            console.error("Lỗi lấy IP:", error);
+            return null;
+        }
+    }
+
+    async function isConnectedToAuthorizedWifi() {
+        const publicIp = await getPublicIpAddress();
+        if (!publicIp) {
+            alert('Không ở quán ai cho chấm công hả. Kết nối wifi của quán đi.');
+            return false;
+        }
+
+        const authorizedIps = settings.wifiIpAddress.split(',').map(ip => ip.trim());
+
+        if (authorizedIps.includes(publicIp)) {
+            return true;
+        } else {
+            alert(`Tới quán mới chấm công được !!! IP hiện tại : ${publicIp}`);
+            return false;
+        }
+    }
+
+    // --- CHỨC NĂNG MỚI: TẢI VÀ HIỂN THỊ LỊCH SỬ CÁ NHÂN ---
+    let unsubscribePersonalAttendance = null;
+    function loadPersonalAttendance(employeeId) {
+        if (unsubscribePersonalAttendance) unsubscribePersonalAttendance();
+        unsubscribePersonalAttendance = db.collection('attendance')
+            .where('employeeId', '==', employeeId)
+            .orderBy('date', 'desc')
+            .onSnapshot(snap => {
+                const history = [];
+                snap.forEach(doc => history.push({id: doc.id, ...doc.data()}));
+                populatePersonalAttendanceUI(history);
+            });
+    }
+
+    function populatePersonalAttendanceUI(history) {
+        personalAttendanceTableBody.innerHTML = '';
+        if (history.length === 0) {
+            personalAttendanceTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Bạn chưa có lịch sử chấm công nào.</td></tr>';
+            return;
+        }
+
+        history.forEach(r => {
+            const emp = employees.find(x => x.id === r.employeeId) || {};
+            const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
+            const empShift = shifts[finalShiftKey];
+
+            let checkIn = r.checkIn || '---';
+            let finalCheckOut = r.checkOut || '---';
+            let hoursText = '0 giờ 0 phút';
+            let status = '';
+
+            if (r.checkIn) {
+                let inDT = new Date(`${r.date}T${r.checkIn}`);
+                let outDT = null;
+                if (!r.checkOut) {
+                    outDT = new Date(`${r.date}T23:00:00`);
+                } else {
+                    outDT = new Date(`${r.date}T${r.checkOut}`);
+                }
+                if (outDT <= inDT) outDT.setDate(outDT.getDate() + 1);
+                const diff = Math.max(0, outDT - inDT);
+                const hrs = Math.floor(diff / 3600000);
+                const mins = Math.round((diff % 3600000) / 60000);
+                hoursText = `${hrs} giờ ${mins} phút`;
+
+                const shiftStart = new Date(`${r.date}T${empShift.start}`);
+                const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
+                
+                if (r.edited) {
+                    status = 'Sửa công';
+                } else if (!r.checkOut) {
+                    status = 'Quên chấm ra';
+                    finalCheckOut = '23:00:00 (Hệ thống)';
+                } else if (r.lateReason) {
+                    status = 'Đi muộn (Xin phép)';
+                } else if (isAfterGracePeriod) {
+                    status = 'Đi muộn (Bị phạt)';
+                } else {
+                    status = 'Đúng giờ';
+                }
+            } else {
+                status = 'Vắng mặt';
+            }
+
+            const isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
+            if (isHoliday) status += ' / Ngày lễ';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
+                            <td>${empShift?.name||'N/A'}</td>
+                            <td>${checkIn}</td>
+                            <td>${finalCheckOut}</td>
+                            <td>${hoursText}</td>
+                            <td>${status}</td>`;
+            personalAttendanceTableBody.appendChild(tr);
+        });
+    }
+
+    
+    async function checkWeeklyLateNotes(employeeId) {
+        const today = new Date();
+        const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
+        firstDayOfWeek.setHours(0, 0, 0, 0);
+        
+        const q = await db.collection('attendance')
+                          .where('employeeId', '==', employeeId)
+                          .where('timestamp', '>=', firstDayOfWeek)
+                          .get();
+        
+        let lateNotesUsed = 0;
+        q.forEach(doc => {
+            if (doc.data().lateReason) {
+                lateNotesUsed++;
+            }
+        });
+        
+        const remaining = Math.max(0, LATE_NOTE_LIMIT - lateNotesUsed);
+        
+        if (remaining > 0) {
+            lateReasonInput.disabled = false;
+            lateNotesRemainingSpan.textContent = `(Còn lại: ${remaining} lượt)`;
+        } else {
+            lateReasonInput.disabled = true;
+            lateReasonInput.value = '';
+            lateNotesRemainingSpan.textContent = '(Đã hết lượt xin phép trong tuần)';
+        }
+    }
+    
     // Load employees + attendance from Firestore
     let unsubscribeEmployees=null, unsubscribeAttendance=null;
     function loadEmployees(){ showLoading(); if(unsubscribeEmployees) unsubscribeEmployees(); unsubscribeEmployees = db.collection('employees').onSnapshot(snap=>{ employees=[]; snap.forEach(doc=> employees.push({id:doc.id, ...doc.data()})); populateEmployeesUI(); hideLoading(); tryRestoreSession(); },err=>{ console.error(err); hideLoading(); alert('Lỗi tải nhân viên'); }); }
@@ -410,7 +589,7 @@
     function populateEmployeesUI(){
         employeesTable.innerHTML='';
         exportEmployee.innerHTML='';
-        exportPosition.innerHTML=''; // NEW: Clear position filter
+        exportPosition.innerHTML=''; 
         
         let allEmpOpt = document.createElement('option'); allEmpOpt.value='all'; allEmpOpt.textContent='Tất cả nhân viên'; exportEmployee.appendChild(allEmpOpt);
         
@@ -666,6 +845,8 @@
             isAdmin=true; 
             adminVerificationArea.style.display = 'none'; 
             adminFeatures.classList.remove('d-none'); 
+            personalAttendancePanel.style.display = 'none';
+            adminDashboardPanel.style.display = 'block';
             populateAttendanceTable(); 
             alert('Đã xác thực admin'); 
         } else alert('Mã admin không đúng'); 
@@ -673,13 +854,14 @@
     
     // Admin Toggle (giữ nguyên)
     document.getElementById('adminToggle').addEventListener('click', () => {
-        const isCurrentlyHidden = adminDashboardPanel.style.display === 'none';
-        adminDashboardPanel.style.display = isCurrentlyHidden ? 'block' : 'none';
-        
-        if (!isCurrentlyHidden) {
+        const isCurrentlyAdmin = adminDashboardPanel.style.display === 'block';
+        if (isCurrentlyAdmin) {
+            adminDashboardPanel.style.display = 'none';
+            personalAttendancePanel.style.display = 'none';
             isAdmin = false;
-            adminVerificationArea.style.display = 'block';
-            adminFeatures.classList.add('d-none');
+        } else {
+            adminDashboardPanel.style.display = 'block';
+            personalAttendancePanel.style.display = 'none';
         }
     });
 
@@ -711,6 +893,7 @@
                 document.getElementById('editPenalty').value = settings.editPenalty||'20000'; 
                 document.getElementById('latePenalty').value = settings.latePenalty||'10000'; 
                 document.getElementById('forgotOutPenalty').value = settings.forgotOutPenalty||'20000'; 
+                document.getElementById('wifiIpAddress').value = settings.wifiIpAddress || '';
                 renderHolidays();
             } 
         }); 
@@ -729,6 +912,7 @@
         settings.editPenalty = Number(document.getElementById('editPenalty').value)||20000; 
         settings.latePenalty = Number(document.getElementById('latePenalty').value)||10000; 
         settings.forgotOutPenalty = Number(document.getElementById('forgotOutPenalty').value)||20000; 
+        settings.wifiIpAddress = document.getElementById('wifiIpAddress').value.trim();
         
         const holidayInput = document.getElementById('holidayList').value;
         // Chấp nhận cách nhau bằng dấu phẩy, khoảng trắng, hoặc xuống dòng
@@ -740,7 +924,7 @@
         }); 
     }
 
-    // Login flow (giữ nguyên)
+    // Login flow (cập nhật để hiển thị lịch sử cá nhân)
     async function login(){ 
         const username = toUsername(document.getElementById('loginUsername').value.trim()); 
         const password = document.getElementById('loginPassword').value || ''; 
@@ -764,7 +948,9 @@
 
     function applyLoggedIn(emp){ 
         isAdmin = false;
+        loggedInUser = emp;
         adminDashboardPanel.style.display = 'none'; 
+        personalAttendancePanel.style.display = 'block';
         
         loginArea.style.display='none'; 
         clockingArea.classList.remove('d-none'); 
@@ -785,6 +971,10 @@
         }
 
         document.getElementById('loginMessage').innerHTML = '<div class="alert alert-success">Đăng nhập thành công</div>'; 
+        
+        // Gọi các chức năng mới
+        loadPersonalAttendance(emp.id);
+        checkWeeklyLateNotes(emp.id);
     }
 
     function tryRestoreSession(){ 
@@ -820,27 +1010,34 @@
         }).catch(e=>{ console.error(e); alert('Lỗi kiểm tra phiên'); }); 
     }
 
-    // Check-in (LUẬT GRACE PERIOD 5 PHÚT)
+    // Check-in (LUẬT GRACE PERIOD 5 PHÚT và CẬP NHẬT GIỚI HẠN GHI CHÚ)
     async function checkIn(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s){ alert('Bạn chưa đăng nhập'); return; } 
-        const sess = JSON.parse(s); 
-        const emp = employees.find(e=> e.id===sess.employeeId); 
-        if(!emp) { alert('Người dùng không hợp lệ'); return; }
+        if (!loggedInUser) {
+            alert('Bạn chưa đăng nhập'); 
+            return;
+        }
         
+        const emp = loggedInUser;
         const selectedShiftKey = shiftSelect.value;
         if (!selectedShiftKey) {
             alert('Vui lòng chọn ca làm việc của bạn hôm nay.');
             return;
         }
-        const shift = shifts[selectedShiftKey];
 
+        // KIỂM TRA IP WIFI
+        if (!(await isConnectedToAuthorizedWifi())) {
+            return;
+        }
+
+        const shift = shifts[selectedShiftKey];
         const now = new Date(); 
         const dateStr = now.toISOString().split('T')[0]; 
         let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
         
         let isLate = false;
         let finalTimeStr = timeStr; 
+
+        const lateReasonText = document.getElementById('lateReason').value.trim();
 
         if(shift){ 
             const shiftStart = new Date(`${dateStr}T${shift.start}`);
@@ -865,9 +1062,9 @@
             checkIn: finalTimeStr, checkOut: null, 
             shiftChosen: selectedShiftKey, 
             edited: false, 
-            lateReason: document.getElementById('lateReason').value.trim(), 
+            lateReason: lateReasonText, 
             // isLate chỉ TRUE nếu chấm công muộn (isLate = true) VÀ không có lý do xin phép
-            isLate: isLate && !document.getElementById('lateReason').value.trim(), 
+            isLate: isLate && !lateReasonText, 
             timestamp: firebase.firestore.FieldValue.serverTimestamp() 
         }); 
         hideLoading(); 
@@ -880,7 +1077,7 @@
 
         if (isPastGrace && isLate) {
             alertMessage += ' Bạn đã đi muộn (ngoài 5 phút Grace Period) và sẽ bị phạt.';
-        } else if (isPastGrace && document.getElementById('lateReason').value.trim()) {
+        } else if (isPastGrace && lateReasonText) {
             alertMessage += ' Bạn đã đi muộn nhưng có ghi chú xin phép.';
         } else if (isWithinGrace) {
             alertMessage += ' Bạn đã chấm công trong thời gian Grace Period (<= 5 phút) và được tính là Đúng giờ.';
@@ -889,16 +1086,23 @@
         }
 
         alert(alertMessage);
-        document.getElementById('lateReason').value = ''; 
+        document.getElementById('lateReason').value = '';
+        checkWeeklyLateNotes(emp.id); // Cập nhật lại trạng thái ghi chú
     }
 
     // Check-out (giữ nguyên)
     async function checkOut(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s){ alert('Bạn chưa đăng nhập'); return; } 
-        const sess = JSON.parse(s); 
-        const emp = employees.find(e=> e.id===sess.employeeId); 
-        if(!emp){ alert('Người dùng không hợp lệ'); return; }
+        if (!loggedInUser) {
+            alert('Bạn chưa đăng nhập');
+            return;
+        }
+
+        // KIỂM TRA IP WIFI
+        if (!(await isConnectedToAuthorizedWifi())) {
+            return;
+        }
+        
+        const emp = loggedInUser;
         const now = new Date(); const dateStr = now.toISOString().split('T')[0]; let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
         showLoading(); 
         const q = await db.collection('attendance').where('employeeId','==',emp.id).where('date','==',dateStr).get(); 
@@ -965,7 +1169,7 @@
                 finalBonus = Number(bonusInput.value) || 0;
                 finalEditPenalty = Number(penaltyInput.value) || 0; // Use manual input for Mục 7
             }
-            // --- END: NEW LOGIC FOR EDITABLE PAYROLL ---
+            // ---  LOGIC FOR EDITABLE PAYROLL ---
 
             let totalDays=0; let totalWorkedMinutes=0; let totalOvertimeMinutes=0; 
             let totalForgotOut = 0; let totalEdited = 0; 
@@ -1104,7 +1308,7 @@
         }
     }
 
-    // Export to Excel (attendance) (giữ nguyên logic V9)
+    // Export to Excel (attendance) 
     function exportToExcel(){ 
         const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0); 
         const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59); 
@@ -1113,10 +1317,10 @@
 
         const filtered = attendance.filter(r=>{ 
             const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {}; // NEW: Tìm thông tin nhân viên
+            const emp = employees.find(x=>x.id===r.employeeId) || {}; //  Tìm thông tin nhân viên
             
             const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition; // NEW: Lọc theo chức vụ
+            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition; //  Lọc theo chức vụ
 
             return d>=start && d<=end && matchEmp && matchPos; // Áp dụng cả hai bộ lọc
         });
@@ -1303,6 +1507,7 @@
     document.addEventListener('DOMContentLoaded', ()=>{
         // Initial state
         adminDashboardPanel.style.display = 'none'; 
+        personalAttendancePanel.style.display = 'none';
         
         // Event listeners (V10: Thêm listeners cho chức năng Edit/Save/Cancel)
         document.getElementById('verifyAdmin').addEventListener('click', verifyAdmin);
