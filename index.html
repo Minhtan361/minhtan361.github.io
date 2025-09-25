@@ -6,6 +6,9 @@
     <title>Chấm Công Thai Thae - minhtan361</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -194,6 +197,7 @@
                                 <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i>2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):</label>
                                 <textarea class="form-control" id="lateReason" rows="1" placeholder="Em xin đi muộn 30p do bận việc..."></textarea>
                                 <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn. <span id="lateNotesRemaining"></span></small>
+                                <button class="btn btn-warning btn-sm w-100 mt-2" id="submitLateRequestBtn"><i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu</button> 
                             </div>
 
                             <div class="clocking-buttons d-flex gap-3 justify-content-center">
@@ -1509,7 +1513,7 @@
         adminDashboardPanel.style.display = 'none'; 
         personalAttendancePanel.style.display = 'none';
         
-        // Event listeners (V10: Thêm listeners cho chức năng Edit/Save/Cancel)
+        // Event listeners
         document.getElementById('verifyAdmin').addEventListener('click', verifyAdmin);
         document.getElementById('addEmployee').addEventListener('click', addEmployee);
         document.getElementById('clearDataBtn').addEventListener('click', clearAttendance);
@@ -1520,6 +1524,15 @@
         document.getElementById('checkInBtn').addEventListener('click', checkIn);
         document.getElementById('checkOutBtn').addEventListener('click', checkOut);
         document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        document.getElementById('submitLateRequestBtn').addEventListener('click', () => {
+            const reason = document.getElementById('lateReason').value.trim();
+            if (!reason) {
+                alert('Vui lòng nhập lý do xin phép đi muộn vào ô ghi chú.');
+                return;
+            }
+            alert('Đã ghi nhận yêu cầu của bạn. Vui lòng bấm nút "Vào" để chấm công. Lý do sẽ được lưu lại cùng với lần chấm công này.');
+        });
         
         document.getElementById('applyFilterBtn').addEventListener('click', populateAttendanceTable);
         document.getElementById('exportBtn').addEventListener('click', exportToExcel);
