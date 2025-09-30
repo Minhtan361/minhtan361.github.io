@@ -1,27 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <!-- Favicon chuẩn (bắt buộc) -->
-<link rel="icon" href="https://minhtan361.github.io/logo/favicon.ico" type="image/x-icon">
-
-<!-- PNG favicon nhiều kích thước -->
-<link rel="icon" type="image/png" sizes="16x16" href="https://minhtan361.github.io/logo/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://minhtan361.github.io/logo/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="57x57" href="https://minhtan361.github.io/logo/favicon-57x57.png">
-<link rel="icon" type="image/png" sizes="60x60" href="https://minhtan361.github.io/logo/favicon-60x60.png">
-<link rel="icon" type="image/png" sizes="72x72" href="https://minhtan361.github.io/logo/favicon-72x72.png">
-<link rel="icon" type="image/png" sizes="76x76" href="https://minhtan361.github.io/logo/favicon-76x76.png">
-<link rel="icon" type="image/png" sizes="96x96" href="https://minhtan361.github.io/logo/favicon-96x96.png">
-<link rel="icon" type="image/png" sizes="114x114" href="https://minhtan361.github.io/logo/favicon-114x114.png">
-<link rel="icon" type="image/png" sizes="120x120" href="https://minhtan361.github.io/logo/favicon-120x120.png">
-<link rel="icon" type="image/png" sizes="144x144" href="https://minhtan361.github.io/logo/favicon-144x144.png">
-<link rel="icon" type="image/png" sizes="152x152" href="https://minhtan361.github.io/logo/favicon-152x152.png">
-<link rel="icon" type="image/png" sizes="180x180" href="https://minhtan361.github.io/logo/favicon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="https://minhtan361.github.io/logo/favicon-192x192.png">
-<link rel="icon" type="image/png" sizes="256x256" href="https://minhtan361.github.io/logo/favicon-256x256.png">
-<link rel="icon" type="image/png" sizes="384x384" href="https://minhtan361.github.io/logo/favicon-384x384.png">
-<link rel="icon" type="image/png" sizes="512x512" href="https://minhtan361.github.io/logo/favicon-512x512.png">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chấm Công Thai Thae - minhtan361</title>
@@ -171,6 +150,8 @@
         display: none;
     }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -386,6 +367,61 @@
             </div>
         </div>
     </div>
+
+<script>
+VANTA.WAVES({
+  el: "body", // Áp dụng lên thẻ body
+  mouseControls: true,
+  touchControls: true,
+  minHeight: 200.00,
+  minWidth: 200.00,
+  scale: 1.00,
+  scaleMobile: 1.00,
+  // CẤU HÌNH TỪ NGƯỜI DÙNG:
+  colors: [
+    {
+      color: '#5365FF',
+      enabled: true,
+    },
+    {
+      color: '#5864FF',
+      enabled: true,
+    },
+    {
+      color: '#322085',
+      enabled: true,
+    },
+    {
+      color: '#3B94FF',
+      enabled: true,
+    },
+    {
+      color: '#E1F0F5',
+      enabled: false,
+    },
+  ],
+  speed: 4,
+  horizontalPressure: 2,
+  verticalPressure: 10,
+  waveFrequencyX: 2,
+  waveFrequencyY: 10,
+  waveAmplitude: 10,
+  shadows: 10,
+  highlights: 0,
+  colorBrightness: 1.2,
+  colorSaturation: -3,
+  wireframe: false,
+  colorBlending: 10,
+  backgroundColor: '#003FFF',
+  backgroundAlpha: 0,
+  grainScale: 0,
+  grainSparsity: 0,
+  grainIntensity: 0,
+  grainSpeed: 10,
+  resolution: 1,
+  yOffset: 0,
+});
+</script>
 
     <script>
     // Firebase config (giữ nguyên)
@@ -755,10 +791,9 @@
             
             const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
             const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition; // NEW: Lọc theo chức vụ
-            
             return d>=start && d<=end && matchEmp && matchPos; // Áp dụng cả hai bộ lọc
         });
-        
+
         if (filtered.length === 0) {
             attendanceTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không tìm thấy dữ liệu chấm công nào trong kỳ này.</td></tr>';
             return;
@@ -768,12 +803,10 @@
             const emp = employees.find(x=>x.id===r.employeeId) || {};
             const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
             const empShift = shifts[finalShiftKey];
-            
             let checkIn = r.checkIn || '---';
             let checkOut = r.checkOut || '---';
             let note = r.lateReason ? `Xin phép: ${r.lateReason}` : '';
             let status = '';
-
             let hoursText = '0 giờ 0 phút';
             let finalCheckOut = r.checkOut;
 
@@ -801,25 +834,25 @@
                 const shiftStart = new Date(`${r.date}T${empShift.start}`);
                 const isEarlyOrOnTime = inDT.getTime() <= shiftStart.getTime();
                 const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
-                
+
                 if (r.edited) {
                     status = 'Sửa công (Phạt 20k)';
                 } else if (!r.checkOut) {
                     status = 'Quên chấm ra (Phạt 20k)';
                 } else if (isEarlyOrOnTime) {
                     status = 'Đúng giờ';
-                } else if (!isAfterGracePeriod) { 
-                    status = 'Đúng giờ (Grace period)'; 
+                } else if (!isAfterGracePeriod) {
+                    status = 'Đúng giờ (Grace period)';
                 } else if (isAfterGracePeriod) {
                     if (r.isLate) {
-                        status = 'Đi muộn (Phạt 10k)'; 
+                        status = 'Đi muộn (Phạt 10k)';
                     } else if (r.lateReason) {
-                        status = 'Đi muộn (Xin phép)'; 
+                        status = 'Đi muộn (Xin phép)';
                     } else {
                         status = 'Đi muộn (Lỗi dữ liệu củ)';
                     }
                 } else {
-                    status = 'Lỗi trạng thái'; 
+                    status = 'Lỗi trạng thái';
                 }
                 // --- KẾT THÚC LOGIC TRẠNG THÁI ---
             } else {
@@ -830,7 +863,6 @@
             if (isHoliday) status += ' / Ngày lễ';
 
             const tr = document.createElement('tr');
-            
             tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
                             <td>${emp.name||r.employeeName||'Unknown'}</td>
                             <td>${empShift?.name||'N/A'}</td>
@@ -844,39 +876,60 @@
     }
 
     // Add employee with auto username and default password (giữ nguyên)
-    function addEmployee(){ 
-        if(!isAdmin){ alert('Cần quyền admin'); return; } 
-        const name = document.getElementById('employeeName').value.trim(); 
-        if(!name){ alert('Nhập tên'); return; } 
-        const position = document.getElementById('employeePosition').value.trim(); 
-        const baseSalary = Number(document.getElementById('employeeBaseSalary').value) || 0; 
+    function addEmployee(){
+        if(!isAdmin){
+            alert('Cần quyền admin'); 
+            return;
+        }
+        const name = document.getElementById('employeeName').value.trim();
+        if(!name){
+            alert('Nhập tên'); 
+            return;
+        }
+        const position = document.getElementById('employeePosition').value.trim();
+        const baseSalary = Number(document.getElementById('employeeBaseSalary').value) || 0;
         const shift = document.getElementById('employeeShift').value;
         const username = toUsername(name);
         const defaultPassword = 'thaithae';
-        showLoading(); 
-        db.collection('employees').add({ name, position, baseSalary, shift, username, password: defaultPassword, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
-        .then(()=>{ 
-            document.getElementById('employeeName').value=''; document.getElementById('employeePosition').value=''; document.getElementById('employeeBaseSalary').value=''; 
-            alert(`Đã thêm ${name} (username: ${username}, mật khẩu: ${defaultPassword})`); 
-            hideLoading(); 
+
+        showLoading();
+        db.collection('employees').add({
+            name,
+            position,
+            baseSalary,
+            shift,
+            username,
+            password: defaultPassword,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         })
-        .catch(err=>{ console.error(err); hideLoading(); alert('Lỗi thêm nhân viên'); }); 
+        .then(()=>{
+            document.getElementById('employeeName').value='';
+            document.getElementById('employeePosition').value='';
+            document.getElementById('employeeBaseSalary').value='';
+            alert(`Đã thêm ${name} (username: ${username}, mật khẩu: ${defaultPassword})`);
+            hideLoading();
+        })
+        .catch(err=>{
+            console.error(err);
+            hideLoading();
+            alert('Lỗi thêm nhân viên');
+        });
     }
 
     // Admin verify (giữ nguyên)
-    function verifyAdmin(){ 
-        const code = document.getElementById('adminCode').value; 
-        if(code==='thaithae2025@'){ 
-            isAdmin=true; 
-            adminVerificationArea.style.display = 'none'; 
-            adminFeatures.classList.remove('d-none'); 
+    function verifyAdmin(){
+        const code = document.getElementById('adminCode').value;
+        if(code==='thaithae2025@'){
+            isAdmin=true;
+            adminVerificationArea.style.display = 'none';
+            adminFeatures.classList.remove('d-none');
             personalAttendancePanel.style.display = 'none';
             adminDashboardPanel.style.display = 'block';
-            populateAttendanceTable(); 
-            alert('Đã xác thực admin'); 
-        } else alert('Mã admin không đúng'); 
+            populateAttendanceTable();
+            alert('Đã xác thực admin');
+        } else alert('Mã admin không đúng');
     }
-    
+
     // Admin Toggle (giữ nguyên)
     document.getElementById('adminToggle').addEventListener('click', () => {
         const isCurrentlyAdmin = adminDashboardPanel.style.display === 'block';
@@ -891,685 +944,701 @@
     });
 
     // Clear attendance (giữ nguyên)
-    function clearAttendance(){ 
-        if(!isAdmin){ alert('Cần admin'); return; } 
-        if(!confirm('Xóa toàn bộ dữ liệu chấm công?')) return; 
-        showLoading(); 
-        db.collection('attendance').get().then(snap=>{ const batch = db.batch(); snap.forEach(doc=> batch.delete(doc.ref)); return batch.commit(); })
-        .then(()=>{ hideLoading(); alert('Đã xóa'); }).catch(err=>{ console.error(err); hideLoading(); alert('Lỗi xóa'); }); 
-    }
-
-    // Force logout all (giữ nguyên)
-    function forceLogoutAll(){ 
-        if(!isAdmin) { alert('Cần admin'); return; } 
-        db.collection('meta').doc('session').set({forceLogoutAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
-        .then(()=> alert('Đã ép all logout')).catch(e=>alert('Lỗi')); 
-    }
-
-    // Load/Save Settings (giữ nguyên logic V9)
-    function loadSettings(){ 
-        db.collection('meta').doc('payroll').get().then(doc=>{ 
-            if(doc.exists){ 
-                settings = {...settings, ...doc.data()}; 
-                document.getElementById('holidayList').value = settings.holidays.join('\n'); 
-                document.getElementById('wagePerHour').value = settings.wagePerHour||''; 
-                document.getElementById('defaultBonus').value = settings.defaultBonus||''; 
-                document.getElementById('defaultPenalty').value = settings.defaultPenalty||''; 
-                document.getElementById('editPenalty').value = settings.editPenalty||'20000'; 
-                document.getElementById('latePenalty').value = settings.latePenalty||'10000'; 
-                document.getElementById('forgotOutPenalty').value = settings.forgotOutPenalty||'20000'; 
-                document.getElementById('wifiIpAddress').value = settings.wifiIpAddress || '';
-                renderHolidays();
-            } 
-        }); 
+    function clearAttendance(){
+        if(!isAdmin){
+            alert('Cần admin'); 
+            return;
+        }
+        if(!confirm('Xóa toàn bộ dữ liệu chấm công?')) return;
+        showLoading();
+        db.collection('attendance').get()
+        .then(snap=>{
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            return batch.commit();
+        })
+        .then(()=>{
+            alert('Đã xóa dữ liệu chấm công thành công');
+            hideLoading();
+        })
+        .catch(err=>{
+            console.error(err);
+            hideLoading();
+            alert('Lỗi xóa dữ liệu chấm công');
+        });
     }
     
-    function renderHolidays(){
-        const holidayText = settings.holidays.length > 0 ? settings.holidays.map(h => new Date(h).toLocaleDateString('vi-VN')).join(', ') : 'Chưa có ngày lễ nào.';
-        document.getElementById('currentHolidays').textContent = `Ngày lễ đã lưu: ${holidayText}`;
-    }
-
-    function saveSettings(){ 
-        if(!isAdmin){ alert('Cần admin'); return; } 
-        settings.wagePerHour = Number(document.getElementById('wagePerHour').value)||0; 
-        settings.defaultBonus = Number(document.getElementById('defaultBonus').value)||0; 
-        settings.defaultPenalty = Number(document.getElementById('defaultPenalty').value)||0; 
-        settings.editPenalty = Number(document.getElementById('editPenalty').value)||20000; 
-        settings.latePenalty = Number(document.getElementById('latePenalty').value)||10000; 
-        settings.forgotOutPenalty = Number(document.getElementById('forgotOutPenalty').value)||20000; 
-        settings.wifiIpAddress = document.getElementById('wifiIpAddress').value.trim();
-        
-        const holidayInput = document.getElementById('holidayList').value;
-        // Chấp nhận cách nhau bằng dấu phẩy, khoảng trắng, hoặc xuống dòng
-        settings.holidays = holidayInput.split(/[\n,]/).map(s=>s.trim()).filter(Boolean); 
-
-        db.collection('meta').doc('payroll').set(settings).then(()=>{ 
-            renderHolidays();
-            alert('Đã lưu cài đặt'); 
-        }); 
-    }
-
-    // Login flow (cập nhật để hiển thị lịch sử cá nhân)
-    async function login(){ 
-        const username = toUsername(document.getElementById('loginUsername').value.trim()); 
-        const password = document.getElementById('loginPassword').value || ''; 
-        if(!username){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-warning">Nhập username</div>'; return; }
-        const emp = employees.find(e=> (e.username||'')===username );
-        if(!emp){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Không tìm thấy nhân viên</div>'; return; }
-        if((emp.password||'thaithae') !== password){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Mật khẩu sai</div>'; return; }
-        const expiresAt = Date.now() + SESSION_DURATION_MS;
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ employeeId: emp.id, username: emp.username, expiresAt, loginAt: Date.now() }));
-        applyLoggedIn(emp);
-    }
-    function loginById(){ 
-        const id = document.getElementById('loginUsername').value.trim(); 
-        if(!id){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-warning">Nhập ID</div>'; return; } 
-        const emp = employees.find(e=> e.id===id); 
-        if(!emp){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Không tìm thấy ID</div>'; return; } 
-        const expiresAt = Date.now() + SESSION_DURATION_MS; 
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ employeeId: emp.id, username: emp.username, expiresAt, loginAt: Date.now() })); 
-        applyLoggedIn(emp);
-    }
-
-    function applyLoggedIn(emp){ 
-        isAdmin = false;
-        loggedInUser = emp;
-        adminDashboardPanel.style.display = 'none'; 
-        personalAttendancePanel.style.display = 'block';
-        
-        loginArea.style.display='none'; 
-        clockingArea.classList.remove('d-none'); 
-        document.getElementById('loggedName').textContent = emp.name; 
-        document.getElementById('loggedPosition').textContent = emp.position||''; 
-        document.getElementById('loggedShift').textContent = shifts[emp.shift]?.name || 'Không xác định';
-
-        // Populate and select default shift
-        shiftSelect.innerHTML = '<option value="">--- VUI LÒNG CHỌN CA LÀM ---</option>'; 
-        for(const key in shifts){
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = `${shifts[key].name} (${shifts[key].start.substring(0,5)} - ${shifts[key].end.substring(0,5)})`;
-            if(emp.shift === key) {
-                option.setAttribute('selected', 'selected');
-            }
-            shiftSelect.appendChild(option);
-        }
-
-        document.getElementById('loginMessage').innerHTML = '<div class="alert alert-success">Đăng nhập thành công</div>'; 
-        
-        // Gọi các chức năng mới
-        loadPersonalAttendance(emp.id);
-        checkWeeklyLateNotes(emp.id);
-    }
-
-    function tryRestoreSession(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s) return false; 
-        try{ 
-            const obj = JSON.parse(s); 
-            if(Date.now() > obj.expiresAt) { localStorage.removeItem(SESSION_KEY); return false; } 
-            const emp = employees.find(e=> e.id===obj.employeeId); 
-            if(emp){ applyLoggedIn(emp); return true; } 
-        } catch(e){ console.error(e); } 
-        return false; 
-    }
-
-    // Logout (giữ nguyên)
-    function logout(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s) { location.reload(); return; } 
-        const obj = JSON.parse(s);
-        db.collection('meta').doc('session').get().then(doc=>{ 
-            const forceAt = doc.exists && doc.data().forceLogoutAt ? doc.data().forceLogoutAt.toMillis() : 0; 
-            if(forceAt && forceAt > (obj.loginAt||0)){ 
-                localStorage.removeItem(SESSION_KEY); 
-                location.reload(); 
-                return; 
-            }
-            if(Date.now() < obj.expiresAt){ 
-                alert('Phiên đăng nhập còn hiệu lực trong 4 ngày, không thể thoát. Liên hệ minhtan để ép đăng xuất.'); 
-                return; 
-            }
-            localStorage.removeItem(SESSION_KEY); 
+    // Force logout all
+    document.getElementById('forceLogoutAll').addEventListener('click', () => {
+        if (!isAdmin) { alert('Cần admin'); return; }
+        if (!confirm('Bạn có chắc chắn muốn buộc tất cả nhân viên đăng xuất không?')) return;
+        showLoading();
+        db.collection('meta').doc('session').set({
+            forceLogoutAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+        .then(() => {
+            localStorage.removeItem(SESSION_KEY);
+            alert('Đã buộc đăng xuất tất cả phiên.');
+            hideLoading();
             location.reload(); 
-        }).catch(e=>{ console.error(e); alert('Lỗi kiểm tra phiên'); }); 
-    }
-
-    // Check-in (LUẬT GRACE PERIOD 5 PHÚT và CẬP NHẬT GIỚI HẠN GHI CHÚ)
-    async function checkIn(){ 
-        if (!loggedInUser) {
-            alert('Bạn chưa đăng nhập'); 
-            return;
-        }
-        
-        const emp = loggedInUser;
-        const selectedShiftKey = shiftSelect.value;
-        if (!selectedShiftKey) {
-            alert('Vui lòng chọn ca làm việc của bạn hôm nay.');
-            return;
-        }
-
-        // KIỂM TRA IP WIFI
-        if (!(await isConnectedToAuthorizedWifi())) {
-            return;
-        }
-
-        const shift = shifts[selectedShiftKey];
-        const now = new Date(); 
-        const dateStr = now.toISOString().split('T')[0]; 
-        let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
-        
-        let isLate = false;
-        let finalTimeStr = timeStr; 
-
-        const lateReasonText = document.getElementById('lateReason').value.trim();
-
-        if(shift){ 
-            const shiftStart = new Date(`${dateStr}T${shift.start}`);
-            
-            // 1. Chấm công đúng giờ (trước hoặc tại giờ bắt đầu ca)
-            if(now.getTime() <= shiftStart.getTime()) { 
-                finalTimeStr = shift.start; // Ghi nhận giờ vào là giờ bắt đầu ca
-            } 
-            // 2. Chấm công muộn SAU thời gian Grace Period (sau 5 phút) -> Bị phạt
-            else if (now.getTime() > shiftStart.getTime() + GRACE_PERIOD_MS) {
-                isLate = true; 
-            }
-            // 3. Chấm công trong Grace Period (từ 1 giây đến 5 phút) -> Vẫn ghi nhận giờ thực, nhưng isLate = false.
-        }
-
-        showLoading(); 
-        const q = await db.collection('attendance').where('employeeId','==',emp.id).where('date','==',dateStr).get(); 
-        if(!q.empty){ hideLoading(); alert('Bạn đã chấm công vào hôm nay'); return; }
-
-        await db.collection('attendance').add({ 
-            employeeId: emp.id, employeeName: emp.name, date: dateStr, 
-            checkIn: finalTimeStr, checkOut: null, 
-            shiftChosen: selectedShiftKey, 
-            edited: false, 
-            lateReason: lateReasonText, 
-            // isLate chỉ TRUE nếu chấm công muộn (isLate = true) VÀ không có lý do xin phép
-            isLate: isLate && !lateReasonText, 
-            timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-        }); 
-        hideLoading(); 
-        
-        let alertMessage = `Đã chấm công vào lúc ${finalTimeStr}. Ca làm đã chọn: ${shift.name}.`;
-        
-        const shiftStart = new Date(`${dateStr}T${shift.start}`);
-        const isPastGrace = now.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
-        const isWithinGrace = now.getTime() > shiftStart.getTime() && !isPastGrace;
-
-        if (isPastGrace && isLate) {
-            alertMessage += ' Bạn đã đi muộn (ngoài 5 phút Grace Period) và sẽ bị phạt.';
-        } else if (isPastGrace && lateReasonText) {
-            alertMessage += ' Bạn đã đi muộn nhưng có ghi chú xin phép.';
-        } else if (isWithinGrace) {
-            alertMessage += ' Bạn đã chấm công trong thời gian Grace Period (<= 5 phút) và được tính là Đúng giờ.';
-        } else {
-             alertMessage += ' Bạn đã chấm công Đúng giờ.';
-        }
-
-        alert(alertMessage);
-        document.getElementById('lateReason').value = '';
-        checkWeeklyLateNotes(emp.id); // Cập nhật lại trạng thái ghi chú
-    }
-
-    // Check-out (giữ nguyên)
-    async function checkOut(){ 
-        if (!loggedInUser) {
-            alert('Bạn chưa đăng nhập');
-            return;
-        }
-
-        // KIỂM TRA IP WIFI
-        if (!(await isConnectedToAuthorizedWifi())) {
-            return;
-        }
-        
-        const emp = loggedInUser;
-        const now = new Date(); const dateStr = now.toISOString().split('T')[0]; let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
-        showLoading(); 
-        const q = await db.collection('attendance').where('employeeId','==',emp.id).where('date','==',dateStr).get(); 
-        if(q.empty){ hideLoading(); alert('Bạn chưa chấm công vào hôm nay'); return; }
-        const doc = q.docs[0]; const data = doc.data(); 
-        if(data.checkOut){ hideLoading(); alert('Bạn đã chấm công ra rồi'); return; }
-        await db.collection('attendance').doc(doc.id).update({ checkOut: timeStr, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); 
-        hideLoading(); alert(`Đã chấm công ra lúc ${timeStr}`);
-    }
-
-    // Payroll computation (LUẬT PHẠT QUÊN CHẤM RA)
-    function computePayroll(){ 
-        printPayrollBtn.classList.add('d-none'); 
-        
-        const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0);
-        const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59);
-        const selectedEmployeeId = document.getElementById('exportEmployee').value||'all'; // Đổi tên biến
-        const selectedPosition = document.getElementById('exportPosition').value||'all'; // Lấy giá trị chức vụ
-
-        const holidays = settings.holidays||[];
-        const filtered = attendance.filter(r=>{ 
-            const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {}; // NEW: Tìm thông tin nhân viên
-            
-            const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition; // NEW: Lọc theo chức vụ
-
-            return d>=start && d<=end && matchEmp && matchPos; // Áp dụng cả hai bộ lọc
+        })
+        .catch(err => {
+            console.error(err);
+            hideLoading();
+            alert('Lỗi buộc đăng xuất');
         });
-        if(filtered.length===0){ alert('Không có dữ liệu để tính lương'); return; }
+    });
 
-        const byEmp = {};
-        for(const id in employees) { 
-            const emp = employees[id];
-            const matchEmp = selectedEmployeeId === 'all' || selectedEmployeeId === emp.id;
-            const matchPos = selectedPosition === 'all' || (emp.position||'').trim() === selectedPosition; // NEW: Match position
-
-            if (matchEmp && matchPos) { // Chỉ tính lương cho nhân viên thỏa mãn cả hai điều kiện lọc
-                byEmp[emp.id] = { emp, records: [] };
-            }
-        }
+    // --- CHỨC NĂNG TÍNH LƯƠNG ---
+    function computePayroll() {
+        if (!isAdmin) { alert('Cần quyền admin'); return; }
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (!start || !end) { alert('Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc!'); return; }
         
-        filtered.forEach(r=>{
-            const emp = employees.find(e=>e.id===r.employeeId) || {name:r.employeeName||'Unknown', baseSalary:0, shift:r.shift||''};
-            if(!byEmp[r.employeeId]) byEmp[r.employeeId] = { emp, records: [] };
-            byEmp[r.employeeId].records.push(r);
-        });
-
+        showLoading();
         payrollResults = {};
-        for(const empId in byEmp){
-            const {emp, records} = byEmp[empId];
-            const wagePerHour = settings.wagePerHour || emp.baseSalary || 0;
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        
+        const filteredAttendance = attendance.filter(r => {
+            const d = new Date(r.date);
+            return d >= startDate && d <= endDate;
+        });
+
+        employees.forEach(emp => {
+            const empAttendance = filteredAttendance.filter(r => r.employeeId === emp.id);
+            if (empAttendance.length === 0) return;
+
+            let totalWorkingMinutes = 0;
+            let totalBaseSalary = Number(emp.baseSalary) || 0;
+            let totalDeductions = 0;
+            let latePenaltyCount = 0;
+            let editPenaltyCount = 0;
+            let forgotOutPenaltyCount = 0;
+            let isHolidayCount = 0;
             
-            // --- START: NEW LOGIC FOR EDITABLE PAYROLL (Mục 3 & 7) ---
-            let finalBonus = settings.defaultBonus||0;
-            let finalEditPenalty = 0; // Calculated base for first run
-            
-            // Check if the editable input fields exist from a previous calculation/display
-            const bonusInput = document.getElementById(`payroll-bonus-${empId}`);
-            const penaltyInput = document.getElementById(`payroll-edit-penalty-${empId}`); // Mục 7
-            
-            if (bonusInput && penaltyInput) {
-                // Read manually input values if elements exist
-                finalBonus = Number(bonusInput.value) || 0;
-                finalEditPenalty = Number(penaltyInput.value) || 0; // Use manual input for Mục 7
-            }
-            // ---  LOGIC FOR EDITABLE PAYROLL ---
+            empAttendance.forEach(r => {
+                const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
+                const empShift = shifts[finalShiftKey];
+                let isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
 
-            let totalDays=0; let totalWorkedMinutes=0; let totalOvertimeMinutes=0; 
-            let totalForgotOut = 0; let totalEdited = 0; 
-            let totalLate = 0; 
-            let totalWage = 0; let holidayDetails=[];
+                if (r.checkIn) {
+                    let inDT = new Date(`${r.date}T${r.checkIn}`);
+                    let finalCheckOut = r.checkOut || '23:00:00';
+                    let outDT = new Date(`${r.date}T${finalCheckOut}`);
+                    
+                    if (outDT <= inDT) outDT.setDate(outDT.getDate() + 1);
+                    
+                    const diff = Math.max(0, outDT - inDT);
+                    let workingMinutes = Math.round(diff / 60000);
+                    
+                    // Giảm công nếu quên chấm ra
+                    if (!r.checkOut) {
+                        workingMinutes = Math.min(workingMinutes, empShift.minutes);
+                        forgotOutPenaltyCount++;
+                    }
 
-            records.forEach(r=>{
-                if(!r.checkIn){ return; }
-                const currentShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-                const currentShift = shifts[currentShiftKey];
+                    // Tăng gấp đôi công cho ngày lễ
+                    if (isHoliday) {
+                        isHolidayCount++;
+                        totalWorkingMinutes += workingMinutes * 2;
+                    } else {
+                        totalWorkingMinutes += workingMinutes;
+                    }
 
-                let inDT = new Date(`${r.date}T${r.checkIn}`);
-                let finalCheckOut = r.checkOut || '23:00:00'; 
-                let outDT = new Date(`${r.date}T${finalCheckOut}`);
-
-                if(outDT <= inDT) outDT.setDate(outDT.getDate()+1);
-                const diffMs = Math.max(0, outDT - inDT);
-                const workedMins = Math.round(diffMs/60000);
-
-                const isHoliday = holidays.indexOf(r.date) >= 0;
-                let wageForThisDay = (wagePerHour / 60) * workedMins;
-                
-                if(isHoliday) {
-                    let extraHolidayWage = wageForThisDay; 
-                    wageForThisDay += extraHolidayWage; 
-                    holidayDetails.push({date: r.date, minutes: workedMins, amount: Math.round(extraHolidayWage)});
-                }
-                totalWage += wageForThisDay;
-                totalWorkedMinutes += workedMins;
-                totalDays += 1;
-
-                if (!r.checkOut) totalForgotOut += 1; // TÍCH LŨY PHẠT QUÊN CHẤM RA
-                if (r.edited) totalEdited += 1;
-                if (r.isLate) totalLate += 1; // TÍCH LŨY PHẠT ĐI MUỘN
-
-                if (currentShift && workedMins > currentShift.minutes) {
-                    totalOvertimeMinutes += (workedMins - currentShift.minutes);
+                    // Áp dụng phạt
+                    const shiftStart = new Date(`${r.date}T${empShift.start}`);
+                    const GRACE_PERIOD_MS = 5 * 60 * 1000;
+                    const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
+                    
+                    if (r.edited) {
+                        totalDeductions += Number(settings.editPenalty) || 0;
+                        editPenaltyCount++;
+                    } else if (!r.checkOut) {
+                        totalDeductions += Number(settings.forgotOutPenalty) || 0;
+                    } else if (isAfterGracePeriod && !r.lateReason) {
+                        totalDeductions += Number(settings.latePenalty) || 0;
+                        latePenaltyCount++;
+                    }
                 }
             });
 
-            // Calculate penalties based on counts and settings
-            const totalLatePenalties = totalLate * settings.latePenalty;
-            const totalForgotOutPenalties = totalForgotOut * settings.forgotOutPenalty;
+            // Lương cơ bản dựa trên giờ làm việc (tổng phút * lương/phút)
+            const wagePerMinute = (Number(settings.wagePerHour) || 0) / 60;
+            const wageFromHours = Math.round(totalWorkingMinutes * wagePerMinute);
             
-            // Item 4+5+6 (Statutory Penalties)
-            const totalStatutoryPenalty = (settings.defaultPenalty || 0) + totalLatePenalties + totalForgotOutPenalties; 
+            // Tổng lương = Lương giờ + Lương cơ bản (chỉ để tham khảo, không dùng trong tính toán) + Thưởng - Phạt
+            const totalWage = wageFromHours + (Number(settings.defaultBonus) || 0) - totalDeductions;
+            const finalSalary = totalWage;
 
-            // Item 7 (Manual/Calculated Edit Penalty)
-            if (!bonusInput) { // Only calculate based on edited count if this is the first run (no input field exists)
-                finalEditPenalty = totalEdited * settings.editPenalty;
-            }
 
-            const totalExtraHolidayWage = holidayDetails.reduce((sum, h) => sum + h.amount, 0);
-
-            // FINAL NET CALCULATION: Use finalBonus and finalEditPenalty (Mục 7)
-            const net = totalWage + finalBonus - totalStatutoryPenalty - finalEditPenalty;
-
-            const hrs = Math.floor(totalWorkedMinutes/60);
-            const mins = Math.round(totalWorkedMinutes%60);
-            const workedHoursText = `${hrs} giờ ${mins} phút`;
-
-            const otHrs = Math.floor(totalOvertimeMinutes/60);
-            const otMins = Math.round(totalOvertimeMinutes%60);
-            const overtimeHoursText = `${otHrs} giờ ${otMins} phút`;
-
-            payrollResults[empId] = {
-                emp, totalDays, workedHoursText, overtimeHoursText,
-                totalWage: Math.round(totalWage - totalExtraHolidayWage), 
-                baseWage: Math.round(totalWage),
-                bonus: finalBonus, // Use FINAL bonus value (manual or default)
-                penalty: Math.round(totalStatutoryPenalty), // Item 4+5+6
-                editPenalty: Math.round(finalEditPenalty), // Item 7 (Manual or calculated)
-                latePenalties: Math.round(totalLatePenalties), 
-                forgotOutPenalties: Math.round(totalForgotOutPenalties),
-                totalExtraHolidayWage: Math.round(totalExtraHolidayWage),
-                net: Math.round(net),
-                holidayDetails, totalEdited, totalLate, totalForgotOut
+            payrollResults[emp.id] = {
+                name: emp.name,
+                position: emp.position,
+                totalWorkingMinutes: totalWorkingMinutes,
+                totalWorkingHours: totalWorkingMinutes / 60,
+                totalDays: empAttendance.length,
+                wageFromHours: wageFromHours,
+                baseSalary: totalBaseSalary,
+                defaultBonus: Number(settings.defaultBonus) || 0,
+                totalDeductions: totalDeductions,
+                latePenaltyCount: latePenaltyCount,
+                editPenaltyCount: editPenaltyCount,
+                forgotOutPenaltyCount: forgotOutPenaltyCount,
+                isHolidayCount: isHolidayCount,
+                finalSalary: finalSalary,
+                startDate: start,
+                endDate: end,
             };
-        }
-        displayPayrollResults();
-        printPayrollBtn.classList.remove('d-none');
+        });
+
+        displayPayrollResults(payrollResults);
+        hideLoading();
     }
     
-    // Display Payroll Result (Cập nhật để thêm ô nhập liệu)
-    function displayPayrollResults(){ 
-        if(Object.keys(payrollResults).length === 0) {
-            payrollResultArea.style.display='none';
-            alert('Không có kết quả tính lương.');
+    // --- CHỨC NĂNG HIỂN THỊ BẢNG LƯƠNG ---
+    function displayPayrollResults(results) {
+        payrollResultArea.style.display = 'block';
+        payrollResult.innerHTML = '';
+        printPayrollBtn.classList.remove('d-none');
+        
+        let grandTotal = 0;
+
+        for (const id in results) {
+            const r = results[id];
+            grandTotal += r.finalSalary;
+            
+            const html = `
+                <div class="payslip mb-4 border border-info">
+                    <h5 class="text-center">${r.name} - Bảng Lương</h5>
+                    <p class="text-center small text-muted">Từ ${new Date(r.startDate).toLocaleDateString('vi-VN')} đến ${new Date(r.endDate).toLocaleDateString('vi-VN')}</p>
+                    <hr>
+                    <div class="row small mb-2">
+                        <div class="col-6"><strong>Chức vụ:</strong> ${r.position}</div>
+                        <div class="col-6"><strong>Lương cơ bản (Tham khảo):</strong> ${formatVND(r.baseSalary)}</div>
+                    </div>
+                    
+                    <h6 class="mt-3 text-primary"><i class="fas fa-clock me-1"></i> THỜI GIAN LÀM VIỆC</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">Ngày công: <strong>${r.totalDays} ngày</strong></div>
+                        <div class="col-md-4">Tổng giờ làm: <strong>${(r.totalWorkingMinutes / 60).toFixed(2)} giờ</strong></div>
+                        <div class="col-md-4">Lương giờ: <strong>${formatVND(r.wageFromHours)}</strong></div>
+                    </div>
+                    
+                    <h6 class="mt-3 text-success"><i class="fas fa-plus-circle me-1"></i> PHỤ CẤP / THƯỞNG</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">Thưởng mặc định: <strong>${formatVND(r.defaultBonus)}</strong></div>
+                        <div class="col-md-4">Ngày lễ (x2 công): <strong>${r.isHolidayCount} ngày</strong></div>
+                    </div>
+                    
+                    <h6 class="mt-3 text-danger"><i class="fas fa-minus-circle me-1"></i> KHẤU TRỪ / PHẠT</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">Phạt đi muộn (x${r.latePenaltyCount}): <strong>${formatVND(r.latePenaltyCount * settings.latePenalty)}</strong></div>
+                        <div class="col-md-4">Phạt sửa công (x${r.editPenaltyCount}): <strong>${formatVND(r.editPenaltyCount * settings.editPenalty)}</strong></div>
+                        <div class="col-md-4">Phạt quên chấm ra (x${r.forgotOutPenaltyCount}): <strong>${formatVND(r.forgotOutPenaltyCount * settings.forgotOutPenalty)}</strong></div>
+                        <div class="col-12">Tổng Khấu trừ: <strong class="text-danger">${formatVND(r.totalDeductions)}</strong></div>
+                    </div>
+
+                    <div class="summary-row mt-3 p-2 border-top border-bottom">
+                        <div class="row">
+                            <div class="col-6"><strong>TỔNG TIỀN LƯƠNG THỰC LĨ:</strong></div>
+                            <div class="col-6 text-end"><strong class="text-success h5">${formatVND(r.finalSalary)}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            payrollResult.innerHTML += html;
+        }
+        
+        // Tổng hợp chung
+        payrollResult.innerHTML += `<div class="alert alert-primary mt-4">
+                                        <h4>TỔNG THANH TOÁN KỲ NÀY: <span class="float-end">${formatVND(grandTotal)}</span></h4>
+                                   </div>`;
+    }
+
+    // Export Payroll Excel
+    function exportPayrollExcel() {
+        if (Object.keys(payrollResults).length === 0) {
+            alert('Chưa có dữ liệu bảng lương để xuất.');
             return;
         }
 
-        payrollResultArea.style.display='block';
-        payrollResult.innerHTML = '';
+        const data = [
+            ["BẢNG LƯƠNG TỔNG HỢP"],
+            [`Từ ngày ${payrollResults[Object.keys(payrollResults)[0]].startDate} đến ${payrollResults[Object.keys(payrollResults)[0]].endDate}`],
+            [],
+            ["ID", "Tên Nhân viên", "Chức vụ", "Tổng Ngày Công", "Tổng Giờ Làm (Giờ)", "Lương Giờ (VND)", "Thưởng Mặc Định (VND)", "Tổng Khấu Trừ (VND)", "Số lần Phạt Đi muộn", "Số lần Phạt Sửa công", "Số lần Phạt Quên Ra", "LƯƠNG THỰC LĨ (VND)"]
+        ];
 
-        for(const empId in payrollResults){
-            const r = payrollResults[empId];
-            const emp = r.emp;
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage; 
+        let grandTotal = 0;
 
-            let html = `<div class="card mb-3 p-3 border-left-success">
-                <h6 class="text-primary">${emp.name} (${emp.position||''})</h6>
-                <table class="table table-sm table-borderless small">
-                    <tr><th>Tổng ngày công:</th><td>${r.totalDays} ngày</td></tr>
-                    <tr><th>Tổng giờ làm:</th><td>${r.workedHoursText}</td></tr>
-                    <tr><th>Tổng giờ làm thêm:</th><td>${r.overtimeHoursText}</td></tr>
-                    <tr><th>Số lần sửa công:</th><td>${r.totalEdited} lần</td></tr>
-                    <tr><th>Số lần đi muộn (bị phạt):</th><td>${r.totalLate} lần</td></tr>
-                    <tr><th>Số lần quên chấm ra:</th><td>${r.totalForgotOut} lần</td></tr>
-                </table>
-
-                <h6 class="text-success mt-2">Chi tiết Lương</h6>
-                <table class="table table-sm table-striped small">
-                    <tr><th>1. Tổng lương (theo giờ, chưa x2 ngày lễ):</th><td class="text-end">${formatVND(baseWageForTotalHours)}</td></tr>
-                    <tr><th>2. Lương ngày lễ được cộng thêm:</th><td class="text-end text-success">+ ${formatVND(r.totalExtraHolidayWage)}</td></tr>
-                    <tr><th>3. Thưởng (Tự điền):</th> <td class="text-end text-success">
-                            + <input type="number" class="form-control form-control-sm text-end d-inline w-50" 
-                                id="payroll-bonus-${empId}" value="${r.bonus}">
-                        </td>
-                    </tr>
-                    <tr><td colspan="2"><hr class="my-1"></td></tr>
-                    <tr><th>Tổng thu nhập (1+2+3):</th><td class="text-end fw-bold">${formatVND(baseWageForTotalHours + r.totalExtraHolidayWage + r.bonus)}</td></tr>
-                    <tr><td colspan="2"><hr class="my-1"></td></tr>
-                    <tr><th>4. Phạt chung (Admin):</th><td class="text-end red-text">- ${formatVND(settings.defaultPenalty||0)}</td></tr>
-                    <tr><th>5. Phạt đi muộn (${r.totalLate} lần):</th><td class="text-end red-text">- ${formatVND(r.latePenalties)}</td></tr>
-                    <tr><th>6. Phạt quên chấm ra (${r.totalForgotOut} lần):</th><td class="text-end red-text">- ${formatVND(r.forgotOutPenalties)}</td></tr>
-                    <tr><th>7. Phạt (Tự điền):</th> <td class="text-end red-text">
-                            - <input type="number" class="form-control form-control-sm text-end d-inline w-50" 
-                                id="payroll-edit-penalty-${empId}" value="${r.editPenalty}">
-                        </td>
-                    </tr>
-                    <tr><th>Tổng Khấu trừ (4+5+6+7):</th><td class="text-end red-text fw-bold">- ${formatVND(r.penalty + r.editPenalty)}</td></tr>
-                    <tr class="summary-row"><th>TỔNG THỰC NHẬN:</th><td class="text-end text-primary fs-5">${formatVND(r.net)}</td></tr>
-                </table>
-            </div>`;
-            payrollResult.innerHTML += html;
+        for (const id in payrollResults) {
+            const r = payrollResults[id];
+            grandTotal += r.finalSalary;
+            data.push([
+                id,
+                r.name,
+                r.position,
+                r.totalDays,
+                (r.totalWorkingMinutes / 60).toFixed(2),
+                r.wageFromHours,
+                r.defaultBonus,
+                r.totalDeductions,
+                r.latePenaltyCount,
+                r.editPenaltyCount,
+                r.forgotOutPenaltyCount,
+                r.finalSalary
+            ]);
         }
-    }
-
-    // Export to Excel (attendance) 
-    function exportToExcel(){ 
-        const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0); 
-        const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59); 
-        const selectedEmployeeId = document.getElementById('exportEmployee').value||'all';
-        const selectedPosition = document.getElementById('exportPosition').value||'all'; // Lấy giá trị chức vụ
-
-        const filtered = attendance.filter(r=>{ 
-            const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {}; //  Tìm thông tin nhân viên
-            
-            const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition; //  Lọc theo chức vụ
-
-            return d>=start && d<=end && matchEmp && matchPos; // Áp dụng cả hai bộ lọc
-        });
-        if(filtered.length===0){ alert('Không có dữ liệu'); return; }
         
-        const data = filtered.map(r=>{ 
-            const emp = employees.find(e=> e.id===r.employeeId)||{}; 
-            const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-            const empShift = shifts[finalShiftKey];
+        data.push([]);
+        data.push(["", "", "", "", "", "", "TỔNG THANH TOÁN:", "", "", "", "", grandTotal]);
 
-            let working='0 giờ 0 phút'; let minutes=0; 
-            let finalCheckOut = r.checkOut || '23:00:00';
-            let status = '';
-
-            if(r.checkIn){ 
-                let inDT=new Date(`${r.date}T${r.checkIn}`); 
-                let outDT=new Date(`${r.date}T${finalCheckOut}`); 
-                if(outDT<=inDT) outDT.setDate(outDT.getDate()+1); 
-                const diff=outDT-inDT; const hrs=Math.floor(diff/3600000); const mins=Math.round((diff%3600000)/60000); 
-                working=`${hrs} giờ ${mins} phút`; minutes = hrs*60 + mins; 
-
-                const isHoliday = settings.holidays && settings.holidays.indexOf(r.date)>=0; 
-                
-                // --- LOGIC TRẠNG THÁI VỚI GRACE PERIOD 5 PHÚT KHI EXPORT ---
-                const shiftStart = new Date(`${r.date}T${empShift.start}`);
-                const isEarlyOrOnTime = inDT.getTime() <= shiftStart.getTime();
-                const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
-                
-                if (r.edited) {
-                    status = 'Sửa công (Phạt)';
-                } else if (!r.checkOut) {
-                    status = 'Quên chấm ra (Phạt)';
-                } else if (isEarlyOrOnTime) {
-                    status = 'Đúng giờ';
-                } else if (!isAfterGracePeriod) { 
-                    status = 'Đúng giờ (Grace period)'; 
-                } else if (isAfterGracePeriod) {
-                    if (r.isLate) {
-                        status = 'Đi muộn (Phạt)'; 
-                    } else if (r.lateReason) {
-                        status = 'Đi muộn (Xin phép)'; 
-                    } else {
-                        status = 'Đi muộn (Lỗi dữ liệu củ)';
-                    }
-                } else {
-                    status = 'Lỗi trạng thái';
-                }
-                // --- KẾT THÚC LOGIC TRẠNG THÁI EXPORT ---
-
-                if (isHoliday) status += ' / Ngày lễ';
-
-            } else { status = 'Vắng mặt'; }
-
-            const wagePerHour = settings.wagePerHour || emp.baseSalary || 0; 
-            const multiplier = settings.holidays && settings.holidays.indexOf(r.date)>=0 ? 2 : 1;
-            const amount = (minutes/60) * wagePerHour * multiplier;
-
-            return { 
-                'Ngày': r.date, 'Nhân viên': emp.name||r.employeeName||'Unknown', 'Chức vụ': emp.position||'', 
-                'Ca': empShift?.name||'N/A', 'Giờ vào': r.checkIn||'---', 'Giờ ra (TT)': finalCheckOut, 
-                'Thời gian làm việc': working, 'Trạng thái': status, 
-                'Ghi chú/Xin phép': r.lateReason||'',
-                'Lương (Tạm tính)': Math.round(amount) 
-            } 
-        });
-        const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Du lieu Cham Cong'); 
-        const filename = `Bao_cao_${document.getElementById('startDate').value||'all'}_den_${document.getElementById('endDate').value||'all'}.xlsx`; 
-        XLSX.writeFile(wb, filename);
-    }
-
-    // Print/Export Payroll (Cập nhật nhãn)
-    function generatePayslipHTML(results){ 
-        payslipContainer.innerHTML = '';
-        if(Object.keys(results).length === 0) return;
-
-        for(const empId in results){
-            const r = results[empId];
-            const emp = r.emp;
-            let holidayDetailText = r.holidayDetails.map(h=>`<li>Ngày ${h.date}: ${h.minutes/60} giờ (Cộng thêm: ${formatVND(h.amount)})</li>`).join('');
-            
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage; 
-
-            let html = `<div class="payslip mb-5">
-                <h4>PHIẾU LƯƠNG NHÂN VIÊN THAI THAE</h4>
-                <h5>Từ ngày ${document.getElementById('startDate').value} đến ${document.getElementById('endDate').value}</h5>
-                <p><strong>Nhân viên:</strong> ${emp.name} | <strong>Chức vụ:</strong> ${emp.position||'N/A'} | <strong>Lương cơ bản/giờ:</strong> ${formatVND(settings.wagePerHour || emp.baseSalary || 0)}</p>
-
-                <table class="table table-bordered">
-                    <thead><tr><th colspan="2" class="text-center bg-light">THÔNG TIN CHẤM CÔNG</th></tr></thead>
-                    <tbody>
-                        <tr><td>**Ngày công:**</td><td class="text-end">${r.totalDays} ngày</td></tr>
-                        <tr><td>**Tổng giờ làm:**</td><td class="text-end">${r.workedHoursText}</td></tr>
-                        <tr><td>**Tổng giờ làm thêm:**</td><td class="text-end">${r.overtimeHoursText}</td></tr>
-                        <tr><td>**Lần sửa công:**</td><td class="text-end">${r.totalEdited} lần</td></tr>
-                        <tr><td>**Lần quên chấm ra:**</td><td class="text-end">${r.totalForgotOut} lần</td></tr>
-                    </tbody>
-                </table>
-
-                <table class="table table-bordered">
-                    <thead><tr><th colspan="2" class="text-center bg-light">CHI TIẾT TÍNH LƯƠNG</th></tr></thead>
-                    <tbody>
-                        <tr><th>1. TỔNG LƯƠNG (theo giờ, chưa x2 ngày lễ):</th><td class="text-end">${formatVND(baseWageForTotalHours)}</td></tr>
-                        <tr><th>2. LƯƠNG NGÀY LỄ (Cộng thêm 100%):</th><td class="text-end text-success">+ ${formatVND(r.totalExtraHolidayWage)}</td></tr>
-                        <tr><th>3. THƯỞNG (Tự điền):</th><td class="text-end text-success">+ ${formatVND(r.bonus)}</td></tr>
-                        
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-                        <tr><th>Tổng thu nhập:</th><td class="text-end fw-bold">${formatVND(baseWageForTotalHours + r.bonus + r.totalExtraHolidayWage)}</td></tr>
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-
-                        <tr><th>4. PHẠT CHUNG (Admin):</th><td class="text-end red-text">- ${formatVND(settings.defaultPenalty||0)}</td></tr>
-                        <tr><th>5. PHẠT ĐI MUỘN (${r.totalLate} lần):</th><td class="text-end red-text">- ${formatVND(r.latePenalties)}</td></tr>
-                        <tr><th>6. PHẠT QUÊN CHẤM RA (${r.totalForgotOut} lần):</th><td class="text-end red-text">- ${formatVND(r.forgotOutPenalties)}</td></tr>
-                        <tr><th>7. PHẠT (Tự điền):</th><td class="text-end red-text">- ${formatVND(r.editPenalty)}</td></tr> <tr><th>TỔNG KHẤU TRỪ:</th><td class="text-end red-text fw-bold">- ${formatVND(r.penalty + r.editPenalty)}</td></tr>
-                        
-                        <tr class="summary-row"><th>TỔNG THỰC NHẬN:</th><td class="text-end text-primary fs-5"><strong>${formatVND(r.net)}</strong></td></tr>
-                    </tbody>
-                </table>
-                
-                <p class="small text-muted"><strong>Chi tiết Ngày lễ được nhân đôi:</strong></p>
-                <ul class="small text-muted">${holidayDetailText || 'Không có ngày lễ trong kỳ này.'}</ul>
-            </div>`;
-            payslipContainer.innerHTML += html;
-        }
-        const modal = new bootstrap.Modal(document.getElementById('printExportModal'));
-        modal.show();
-    }
-
-    function printAllPayslips(){ window.print(); }
-
-    // Export Payroll Excel (Cập nhật nhãn)
-    function exportPayrollExcel(){ 
-        if(Object.keys(payrollResults).length === 0) { alert('Chưa có dữ liệu tính lương'); return; }
-
+        const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-
-        const summaryData = Object.values(payrollResults).map(r => {
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage;
-            return {
-                'Mã NV': r.emp.id, 'Tên NV': r.emp.name, 'Chức vụ': r.emp.position || '', 'Ngày công': r.totalDays,
-                'Giờ làm': r.workedHoursText, 'Giờ làm thêm': r.overtimeHoursText, 'Lần sửa công': r.totalEdited,
-                'Lương Cơ bản/giờ': settings.wagePerHour || r.emp.baseSalary || 0,
-                'Tổng lương (chưa x2 ngày lễ)': baseWageForTotalHours, 'Lương ngày lễ cộng thêm': r.totalExtraHolidayWage,
-                'Thưởng (Tự điền)': r.bonus, 'Phạt chung': settings.defaultPenalty || 0, // Cập nhật nhãn
-                'Phạt đi muộn': r.latePenalties, 
-                'Phạt quên chấm ra': r.forgotOutPenalties, 
-                'Phạt (Tự điền)': r.editPenalty, // Cập nhật nhãn
-                'TỔNG THỰC NHẬN (VND)': r.net
-            }
-        });
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Tong Hop Luong');
-
-        Object.values(payrollResults).forEach(r => {
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage;
-            const detailData = [
-                { Key: 'Nhân viên', Value: r.emp.name }, { Key: 'Chức vụ', Value: r.emp.position || 'N/A' },
-                { Key: 'Từ ngày', Value: document.getElementById('startDate').value }, { Key: 'Đến ngày', Value: document.getElementById('endDate').value },
-                { Key: '--------------------', Value: '--------------------' },
-                { Key: 'Tổng ngày công', Value: r.totalDays }, { Key: 'Tổng giờ làm', Value: r.workedHoursText },
-                { Key: 'Tổng giờ làm thêm', Value: r.overtimeHoursText }, { Key: 'Số lần sửa công', Value: r.totalEdited },
-                { Key: 'Số lần quên chấm ra', Value: r.totalForgotOut },
-                { Key: 'Lương cơ bản/giờ', Value: formatVND(settings.wagePerHour || r.emp.baseSalary || 0) },
-                { Key: '--------------------', Value: '--------------------' },
-                { Key: 'TỔNG LƯƠNG (theo giờ, chưa x2 ngày lễ)', Value: formatVND(baseWageForTotalHours) },
-                { Key: 'LƯƠNG NGÀY LỄ CỘNG THÊM', Value: formatVND(r.totalExtraHolidayWage) }, { Key: 'THƯỞNG (Tự điền)', Value: formatVND(r.bonus) }, // Cập nhật nhãn
-                { Key: '--------------------', Value: '--------------------' },
-                { Key: 'PHẠT CHUNG', Value: formatVND(settings.defaultPenalty || 0) }, 
-                { Key: 'PHẠT ĐI MUỘN', Value: formatVND(r.latePenalties) }, 
-                { Key: 'PHẠT QUÊN CHẤM RA', Value: formatVND(r.forgotOutPenalties) }, 
-                { Key: 'PHẠT (Tự điền)', Value: formatVND(r.editPenalty) }, // Cập nhật nhãn
-                { Key: '--------------------', Value: '--------------------' },
-                { Key: 'TỔNG THỰC NHẬN', Value: formatVND(r.net) }
-            ];
-
-            const wsDetail = XLSX.utils.json_to_sheet(detailData, { header: ['Key', 'Value'] });
-            XLSX.utils.book_append_sheet(wb, wsDetail, r.emp.name.substring(0, 30));
-        });
-
-        const filename = `Bang_luong_chi_tiet_${document.getElementById('startDate').value||'all'}_den_${document.getElementById('endDate').value||'all'}.xlsx`;
-        XLSX.writeFile(wb, filename);
+        XLSX.utils.book_append_sheet(wb, ws, "Bảng Lương");
+        
+        const fileName = `Bang_luong_tong_hop_${payrollResults[Object.keys(payrollResults)[0]].startDate}_to_${payrollResults[Object.keys(payrollResults)[0]].endDate}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        alert('Đã xuất Bảng lương Tổng hợp thành công!');
     }
 
 
-    // Init
-    document.addEventListener('DOMContentLoaded', ()=>{
-        // Initial state
-        adminDashboardPanel.style.display = 'none'; 
+    // Print function for all payslips
+    function generatePayslipHTML(results) {
+        if (Object.keys(results).length === 0) {
+            alert('Chưa có dữ liệu bảng lương để in/xuất.');
+            return;
+        }
+
+        let htmlContent = '';
+        for (const id in results) {
+            const r = results[id];
+            
+            const payslip = `
+                <div class="payslip-print-section mb-5 p-4 border border-secondary" style="page-break-after: always; width: 100%; max-width: 800px; margin: 0 auto;">
+                    <h3 class="text-center text-primary">PHIẾU LƯƠNG THAI THAE</h3>
+                    <h4 class="text-center text-secondary">${r.name} (${r.position})</h4>
+                    <p class="text-center small text-muted">Kỳ: ${new Date(r.startDate).toLocaleDateString('vi-VN')} - ${new Date(r.endDate).toLocaleDateString('vi-VN')}</p>
+                    <hr>
+                    
+                    <h5 class="text-primary mb-3">1. Tổng Quan Công Việc</h5>
+                    <table class="table table-bordered table-sm small">
+                        <tbody>
+                            <tr><td>Ngày công thực tế:</td><td class="text-end">${r.totalDays} ngày</td></tr>
+                            <tr><td>Tổng thời gian làm:</td><td class="text-end">${(r.totalWorkingMinutes / 60).toFixed(2)} giờ</td></tr>
+                            <tr><td>Ngày lễ (Lương x2):</td><td class="text-end">${r.isHolidayCount} ngày</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h5 class="text-success mt-4 mb-3">2. Thu Nhập</h5>
+                    <table class="table table-bordered table-sm small">
+                        <tbody>
+                            <tr><td>Lương cơ bản (Tham khảo):</td><td class="text-end">${formatVND(r.baseSalary)}</td></tr>
+                            <tr><td>Thu nhập từ giờ làm việc:</td><td class="text-end text-success">${formatVND(r.wageFromHours)}</td></tr>
+                            <tr><td>Thưởng mặc định:</td><td class="text-end text-success">${formatVND(r.defaultBonus)}</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h5 class="text-danger mt-4 mb-3">3. Khấu Trừ & Phạt</h5>
+                    <table class="table table-bordered table-sm small">
+                        <tbody>
+                            <tr><td>Phạt đi muộn (x${r.latePenaltyCount}):</td><td class="text-end text-danger">${formatVND(r.latePenaltyCount * settings.latePenalty)}</td></tr>
+                            <tr><td>Phạt sửa/quên công (x${r.editPenaltyCount}):</td><td class="text-end text-danger">${formatVND(r.editPenaltyCount * settings.editPenalty)}</td></tr>
+                            <tr><td>Phạt quên chấm ra (x${r.forgotOutPenaltyCount}):</td><td class="text-end text-danger">${formatVND(r.forgotOutPenaltyCount * settings.forgotOutPenalty)}</td></tr>
+                            <tr class="table-warning"><td><strong>TỔNG KHẤU TRỪ:</strong></td><td class="text-end text-danger"><strong>${formatVND(r.totalDeductions)}</strong></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="alert alert-info mt-4">
+                        <h4 class="mb-0">TỔNG LƯƠNG THỰC LĨ: <span class="float-end">${formatVND(r.finalSalary)}</span></h4>
+                    </div>
+                </div>
+            `;
+            htmlContent += payslip;
+        }
+        
+        payslipContainer.innerHTML = htmlContent;
+        const printExportModal = new bootstrap.Modal(document.getElementById('printExportModal'));
+        printExportModal.show();
+    }
+    
+    function printAllPayslips() {
+        const content = document.getElementById('payslipContainer').innerHTML;
+        const originalBody = document.body.innerHTML;
+        
+        document.body.innerHTML = `
+            <div style="font-family: 'Inter', sans-serif; padding: 20px;">
+                ${content}
+            </div>
+        `;
+        
+        window.print();
+        
+        // Reload original content after printing
+        document.body.innerHTML = originalBody;
+        location.reload(); 
+    }
+
+    // --- CHỨC NĂNG LƯU CÀI ĐẶT CHUNG ---
+    function saveSettings() {
+        if (!isAdmin) { alert('Cần quyền admin'); return; }
+        
+        const wagePerHour = Number(document.getElementById('wagePerHour').value) || 0;
+        const defaultBonus = Number(document.getElementById('defaultBonus').value) || 0;
+        const defaultPenalty = Number(document.getElementById('defaultPenalty').value) || 0;
+        const latePenalty = Number(document.getElementById('latePenalty').value) || 0;
+        const editPenalty = Number(document.getElementById('editPenalty').value) || 0;
+        const forgotOutPenalty = Number(document.getElementById('forgotOutPenalty').value) || 0;
+        const wifiIpAddress = document.getElementById('wifiIpAddress').value.trim();
+        const holidayList = document.getElementById('holidayList').value.split(/,?\s*\n?,?\s*/).map(s => s.trim()).filter(s => s.match(/^\d{4}-\d{2}-\d{2}$/)); // Lọc và chuẩn hóa YYYY-MM-DD
+        
+        showLoading();
+        db.collection('settings').doc('payroll').set({
+            wagePerHour,
+            defaultBonus,
+            defaultPenalty,
+            latePenalty,
+            editPenalty,
+            forgotOutPenalty,
+            wifiIpAddress,
+            holidays: holidayList 
+        })
+        .then(() => {
+            alert('Đã lưu Cài đặt chung thành công.');
+            loadSettings(); // Tải lại cài đặt sau khi lưu
+            hideLoading();
+        })
+        .catch(err => {
+            console.error(err);
+            hideLoading();
+            alert('Lỗi lưu cài đặt');
+        });
+    }
+
+    // --- CHỨC NĂNG TẢI CÀI ĐẶT CHUNG ---
+    function loadSettings() {
+        db.collection('settings').doc('payroll').get()
+        .then(doc => {
+            if (doc.exists) {
+                settings = { ...settings, ...doc.data() };
+                
+                document.getElementById('wagePerHour').value = settings.wagePerHour;
+                document.getElementById('defaultBonus').value = settings.defaultBonus;
+                document.getElementById('defaultPenalty').value = settings.defaultPenalty;
+                document.getElementById('latePenalty').value = settings.latePenalty;
+                document.getElementById('editPenalty').value = settings.editPenalty;
+                document.getElementById('forgotOutPenalty').value = settings.forgotOutPenalty;
+                document.getElementById('wifiIpAddress').value = settings.wifiIpAddress;
+                
+                // Hiển thị ngày lễ hiện tại
+                const holidayInputText = settings.holidays ? settings.holidays.join('\n') : '';
+                document.getElementById('holidayList').value = holidayInputText;
+                
+                if (settings.holidays && settings.holidays.length > 0) {
+                    document.getElementById('currentHolidays').innerHTML = '<strong>Ngày lễ hiện tại:</strong> ' + settings.holidays.map(d => new Date(d).toLocaleDateString('vi-VN')).join(', ');
+                } else {
+                    document.getElementById('currentHolidays').textContent = 'Chưa có ngày lễ nào được thiết lập.';
+                }
+            }
+        })
+        .catch(err => console.error("Lỗi tải cài đặt:", err));
+    }
+
+    // --- CHỨC NĂNG LOGIN VÀ SESSION ---
+
+    function saveSession(user) {
+        const sessionData = {
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            position: user.position,
+            shift: user.shift,
+            loginAt: Date.now(),
+            expiresAt: Date.now() + SESSION_DURATION_MS
+        };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        loggedInUser = user;
+        updateUIOnLogin();
+    }
+
+    function tryRestoreSession() {
+        const sessionData = localStorage.getItem(SESSION_KEY);
+        if (sessionData) {
+            const session = JSON.parse(sessionData);
+            if (session.expiresAt > Date.now()) {
+                const user = employees.find(e => e.id === session.id);
+                if (user) {
+                    loggedInUser = user;
+                    updateUIOnLogin();
+                    return;
+                }
+            }
+        }
+        logout();
+    }
+
+    function logout() {
+        localStorage.removeItem(SESSION_KEY);
+        loggedInUser = null;
+        updateUIOnLogout();
+    }
+    
+    function updateSessionTimeLeft() {
+        const sessionData = localStorage.getItem(SESSION_KEY);
+        if (sessionData) {
+            const session = JSON.parse(sessionData);
+            const timeLeftMs = session.expiresAt - Date.now();
+            if (timeLeftMs > 0) {
+                const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                document.querySelector('#clockingArea p.small').textContent = `Phiên đăng nhập còn hiệu lực ${hours} giờ ${minutes} phút`;
+            } else {
+                 document.querySelector('#clockingArea p.small').textContent = `Phiên đăng nhập đã hết hạn`;
+                 logout();
+            }
+        }
+    }
+    setInterval(updateSessionTimeLeft, 60000); // Cập nhật mỗi phút
+
+    function updateUIOnLogin() {
+        document.getElementById('loginArea').classList.add('d-none');
+        document.getElementById('clockingArea').classList.remove('d-none');
+        document.getElementById('loggedName').textContent = loggedInUser.name;
+        document.getElementById('loggedPosition').textContent = loggedInUser.position || 'Nhân viên';
+        document.getElementById('loggedShift').textContent = shifts[loggedInUser.shift]?.name || 'N/A';
+        
+        // Hiển thị lịch sử cá nhân
+        adminDashboardPanel.style.display = 'none'; // Ẩn admin nếu đang hiển thị
+        personalAttendancePanel.style.display = 'block'; 
+        loadPersonalAttendance(loggedInUser.id);
+
+        // Reset và populate shift select
+        shiftSelect.innerHTML = '';
+        Object.keys(shifts).forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = shifts[key].name;
+            if (key === loggedInUser.shift) {
+                option.selected = true;
+            }
+            shiftSelect.appendChild(option);
+        });
+
+        checkWeeklyLateNotes(loggedInUser.id);
+        updateSessionTimeLeft();
+    }
+
+    function updateUIOnLogout() {
+        document.getElementById('loginArea').classList.remove('d-none');
+        document.getElementById('clockingArea').classList.add('d-none');
+        document.getElementById('loginMessage').textContent = '';
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
         personalAttendancePanel.style.display = 'none';
         
-        // Event listeners
-        document.getElementById('verifyAdmin').addEventListener('click', verifyAdmin);
-        document.getElementById('addEmployee').addEventListener('click', addEmployee);
-        document.getElementById('clearDataBtn').addEventListener('click', clearAttendance);
-        document.getElementById('forceLogoutAll').addEventListener('click', forceLogoutAll);
-        document.getElementById('saveSettings').addEventListener('click', saveSettings);
-        document.getElementById('loginBtn').addEventListener('click', login);
-        document.getElementById('loginByIdBtn').addEventListener('click', loginById);
-        document.getElementById('checkInBtn').addEventListener('click', checkIn);
-        document.getElementById('checkOutBtn').addEventListener('click', checkOut);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
+        if (unsubscribePersonalAttendance) {
+            unsubscribePersonalAttendance();
+        }
+    }
+
+    // --- EVENT LISTENERS (Được giữ nguyên) ---
+
+    // Login (giữ nguyên)
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+        const password = document.getElementById('loginPassword').value;
+        const msg = document.getElementById('loginMessage');
         
-        document.getElementById('submitLateRequestBtn').addEventListener('click', () => {
-            const reason = document.getElementById('lateReason').value.trim();
-            if (!reason) {
-                alert('Vui lòng nhập lý do xin phép đi muộn vào ô ghi chú.');
-                return;
-            }
-            alert('Đã ghi nhận yêu cầu của bạn. Vui lòng bấm nút "Vào" để chấm công. Lý do sẽ được lưu lại cùng với lần chấm công này.');
+        const user = employees.find(e => e.username === username && e.password === password);
+
+        if (user) {
+            msg.textContent = 'Đăng nhập thành công!';
+            saveSession(user);
+        } else {
+            msg.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+            msg.classList.add('text-danger');
+        }
+    });
+    
+    // Login by ID (giữ nguyên)
+    document.getElementById('loginByIdBtn').addEventListener('click', () => {
+        const input = prompt("Nhập ID nhân viên:");
+        if (!input) return;
+        const id = input.trim();
+        
+        const user = employees.find(e => e.id === id);
+        
+        if (user) {
+            saveSession(user);
+        } else {
+            alert('ID không hợp lệ.');
+        }
+    });
+
+
+    // Logout (giữ nguyên)
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Check In
+    document.getElementById('checkInBtn').addEventListener('click', async () => {
+        if (!loggedInUser) return;
+        
+        const isAuthorized = await isConnectedToAuthorizedWifi();
+        if (!isAuthorized) return; 
+
+        showLoading();
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+        const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+        const shiftChosen = shiftSelect.value;
+        const defaultShift = loggedInUser.shift;
+        const empShift = shifts[shiftChosen];
+        const shiftStart = new Date(`${dateString}T${empShift.start}`);
+        const isLate = now.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
+        
+        const lateReason = lateReasonInput.value.trim();
+
+        // Kiểm tra xem đã chấm công vào hôm nay chưa
+        const existingDoc = await db.collection('attendance')
+            .where('employeeId', '==', loggedInUser.id)
+            .where('date', '==', dateString)
+            .limit(1)
+            .get();
+            
+        if (!existingDoc.empty) {
+            hideLoading();
+            alert('Bạn đã chấm công vào ngày hôm nay rồi!');
+            return;
+        }
+
+        db.collection('attendance').add({
+            employeeId: loggedInUser.id,
+            employeeName: loggedInUser.name,
+            date: dateString,
+            checkIn: timeString,
+            checkOut: null,
+            shiftDefault: defaultShift,
+            shiftChosen: shiftChosen,
+            isLate: isLate,
+            lateReason: lateReason || null, 
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            alert(`Chấm công VÀO thành công lúc ${timeString}.`);
+            lateReasonInput.value = ''; // Clear lý do sau khi chấm
+            checkWeeklyLateNotes(loggedInUser.id);
+            hideLoading();
+        })
+        .catch(err => {
+            console.error(err);
+            hideLoading();
+            alert('Lỗi chấm công VÀO');
         });
+    });
+
+    // Check Out
+    document.getElementById('checkOutBtn').addEventListener('click', async () => {
+        if (!loggedInUser) return;
         
-        document.getElementById('applyFilterBtn').addEventListener('click', populateAttendanceTable);
-        document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-        document.getElementById('computePayrollBtn').addEventListener('click', computePayroll);
-        document.getElementById('printPayrollBtn').addEventListener('click', () => generatePayslipHTML(payrollResults));
-        document.getElementById('printAllPayslipsBtn').addEventListener('click', printAllPayslips);
-        document.getElementById('exportPayslipExcelBtn').addEventListener('click', exportPayrollExcel);
+        const isAuthorized = await isConnectedToAuthorizedWifi();
+        if (!isAuthorized) return;
 
-        document.getElementById('startDate').valueAsDate = new Date(); 
-        document.getElementById('endDate').valueAsDate = new Date();
+        showLoading();
+        const now = new Date();
+        let dateString = now.toISOString().split('T')[0];
+        const timeString = now.toLocaleTimeString('en-US', { hour12: false });
 
+        // Trường hợp qua đêm, checkOut ngày hôm sau
+        let existingDoc = await db.collection('attendance')
+            .where('employeeId', '==', loggedInUser.id)
+            .where('date', '==', dateString)
+            .where('checkOut', '==', null)
+            .limit(1)
+            .get();
+
+        // Nếu không tìm thấy công ngày hôm nay, thử tìm công ngày hôm qua (cho ca qua đêm)
+        if (existingDoc.empty) {
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            dateString = yesterday.toISOString().split('T')[0];
+            
+            existingDoc = await db.collection('attendance')
+                .where('employeeId', '==', loggedInUser.id)
+                .where('date', '==', dateString)
+                .where('checkOut', '==', null)
+                .limit(1)
+                .get();
+        }
+
+        if (existingDoc.empty) {
+            hideLoading();
+            alert('Bạn chưa chấm công VÀO hoặc đã chấm công RA rồi!');
+            return;
+        }
+
+        const docId = existingDoc.docs[0].id;
+
+        db.collection('attendance').doc(docId).update({
+            checkOut: timeString,
+        })
+        .then(() => {
+            alert(`Chấm công RA thành công lúc ${timeString}.`);
+            hideLoading();
+        })
+        .catch(err => {
+            console.error(err);
+            hideLoading();
+            alert('Lỗi chấm công RA');
+        });
+    });
+    
+    // Submit Late Request (cho phép ghi chú trước khi chấm công vào)
+    document.getElementById('submitLateRequestBtn').addEventListener('click', () => {
+        alert('Vui lòng ghi lý do xin phép vào ô Ghi chú. Khi bạn chấm công VÀO, lý do đó sẽ được lưu lại.');
+    });
+
+    // Admin Features Listeners
+    document.getElementById('addEmployee').addEventListener('click', addEmployee);
+    document.getElementById('verifyAdmin').addEventListener('click', verifyAdmin);
+    document.getElementById('clearDataBtn').addEventListener('click', clearAttendance);
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+    document.getElementById('applyFilterBtn').addEventListener('click', populateAttendanceTable);
+    document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+    document.getElementById('computePayrollBtn').addEventListener('click', computePayroll);
+    document.getElementById('printPayrollBtn').addEventListener('click', () => generatePayslipHTML(payrollResults));
+    document.getElementById('printAllPayslipsBtn').addEventListener('click', printAllPayslips);
+    document.getElementById('exportPayslipExcelBtn').addEventListener('click', exportPayrollExcel);
+
+    // Initialize Date Filters to Today
+    document.getElementById('startDate').valueAsDate = new Date(); 
+    document.getElementById('endDate').valueAsDate = new Date();
+
+    // Export to Excel function (được giữ nguyên)
+    function exportToExcel() {
+        if (!isAdmin) {
+            alert('Chỉ admin mới được xuất file.');
+            return;
+        }
+
+        const table = document.getElementById('attendanceTable');
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Chấm Công");
+        
+        const fileName = `Du_lieu_Cham_Cong_${document.getElementById('startDate').value}_to_${document.getElementById('endDate').value}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    }
+    
+    // Auto-logout check on metadata change
+    document.addEventListener('DOMContentLoaded', () => {
         db.collection('meta').doc('session').onSnapshot(doc=>{
             if(doc.exists && doc.data().forceLogoutAt){
                 const s = localStorage.getItem(SESSION_KEY);
                 if(s){
                     const obj = JSON.parse(s);
+                    // Nếu thời điểm logout bắt buộc lớn hơn thời điểm login của nhân viên
                     if(obj && doc.data().forceLogoutAt.toMillis() > (obj.loginAt||0)){
                         localStorage.removeItem(SESSION_KEY);
                         location.reload();
