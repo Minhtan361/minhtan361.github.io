@@ -266,7 +266,7 @@
                                     </div>
                                     <h5 class="mt-4 text-primary"><i class="fas fa-table me-2"></i>Dữ liệu Chấm công</h5>
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-sm small" id="attendanceTable"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Ca</th><th>Giờ vào</th><th>Giờ ra</th><th>Giờ làm</th><th>Trạng thái</th><th>Ghi chú/Xin phép</th></tr></thead><tbody></tbody></table>
+                                        <table class="table table-striped table-sm small" id="attendanceTable"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Ca</th><th>Giờ vào</th><th>Giờ ra</th><th>Giờ làm</th><th>Trạng thái</th><th>Ghi chú/Xin phép</th><th>Hành động</th></tr></thead><tbody></tbody></table>
                                     </div>
                                     <button class="btn btn-primary btn-sm w-100" id="exportBtn"><i class="fas fa-file-excel me-2"></i>Xuất Excel Dữ liệu Chấm công</button>
 
@@ -407,6 +407,7 @@
     let attendance = [];
     let isAdmin = false;
     let payrollResults = {}; 
+    let isEditingAttendance = {};
     let isEditingEmployee = {};
     let loggedInUser = null; 
     
@@ -760,7 +761,7 @@
         });
         
         if (filtered.length === 0) {
-            attendanceTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không tìm thấy dữ liệu chấm công nào trong kỳ này.</td></tr>';
+            attendanceTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Không tìm thấy dữ liệu chấm công nào trong kỳ này.</td></tr>';
             return;
         }
 
@@ -768,6 +769,7 @@
             const emp = employees.find(x=>x.id===r.employeeId) || {};
             const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
             const empShift = shifts[finalShiftKey];
+            const isEditing = isEditingAttendance[r.id];
             
             let checkIn = r.checkIn || '---';
             let checkOut = r.checkOut || '---';
@@ -777,13 +779,35 @@
             let hoursText = '0 giờ 0 phút';
             let finalCheckOut = r.checkOut;
 
+            const tr = document.createElement('tr');
+            tr.id = `att-row-${r.id}`;
+
+            if (isEditing) {
+                tr.innerHTML = `
+                    <td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
+                    <td>${emp.name||r.employeeName||'Unknown'}</td>
+                    <td>${empShift?.name||'N/A'}</td>
+                    <td><input type="time" step="1" class="form-control form-control-sm" id="edit-checkin-${r.id}" value="${r.checkIn || ''}"></td>
+                    <td><input type="time" step="1" class="form-control form-control-sm" id="edit-checkout-${r.id}" value="${r.checkOut || ''}"></td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td><input type="text" class="form-control form-control-sm" id="edit-note-${r.id}" value="${r.lateReason || ''}"></td>
+                    <td class="d-flex gap-1">
+                        <button class="btn btn-sm btn-success btn-save-att" data-id="${r.id}"><i class="fas fa-save"></i></button>
+                        <button class="btn btn-sm btn-secondary btn-cancel-att" data-id="${r.id}"><i class="fas fa-times"></i></button>
+                    </td>
+                `;
+                attendanceTableBody.appendChild(tr); // Add the row to the table
+                return; // Skip the rest of the loop for this row
+            }
+
             if(r.checkIn){
                 let inDT = new Date(`${r.date}T${r.checkIn}`);
                 let outDT = null;
 
                 // QUY TẮC QUÊN CHẤM RA: Nếu không có checkOut, đặt 23:00 và ghi chú quên chấm
-                if (!finalCheckOut) {
-                    finalCheckOut = '23:00:00';
+                if (!r.checkOut) {
+                    finalCheckOut = '23:00:00'; // Gán giá trị mặc định cho hiển thị
                     outDT = new Date(`${r.date}T${finalCheckOut}`);
                     note += ` / <span class="red-text">Quên chấm ra (23:00)</span>`;
                 } else {
@@ -803,7 +827,7 @@
                 const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
                 
                 if (r.edited) {
-                    status = 'Sửa công (Phạt 20k)';
+                    status = 'Sửa công (xin phép admin)';
                 } else if (!r.checkOut) {
                     status = 'Quên chấm ra (Phạt 20k)';
                 } else if (isEarlyOrOnTime) {
@@ -816,7 +840,7 @@
                     } else if (r.lateReason) {
                         status = 'Đi muộn (Xin phép)'; 
                     } else {
-                        status = 'Đi muộn (Lỗi dữ liệu củ)';
+                        status = 'Đi muộn ';
                     }
                 } else {
                     status = 'Lỗi trạng thái'; 
@@ -829,8 +853,6 @@
             const isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
             if (isHoliday) status += ' / Ngày lễ';
 
-            const tr = document.createElement('tr');
-            
             tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
                             <td>${emp.name||r.employeeName||'Unknown'}</td>
                             <td>${empShift?.name||'N/A'}</td>
@@ -838,9 +860,69 @@
                             <td>${finalCheckOut}</td>
                             <td>${hoursText}</td>
                             <td>${status}</td>
-                            <td>${note}</td>`;
+                            <td>${note}</td>
+                            <td class="d-flex gap-1">
+                                <button class="btn btn-sm btn-info btn-edit-att" data-id="${r.id}"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger btn-delete-att" data-id="${r.id}"><i class="fas fa-trash"></i></button>
+                            </td>`;
             attendanceTableBody.appendChild(tr);
         });
+
+        // Gán sự kiện cho các nút Sửa/Xóa mới
+        document.querySelectorAll('.btn-edit-att').forEach(btn => btn.addEventListener('click', editAttendance));
+        document.querySelectorAll('.btn-delete-att').forEach(btn => btn.addEventListener('click', deleteAttendance));
+        document.querySelectorAll('.btn-save-att').forEach(btn => btn.addEventListener('click', saveAttendance));
+        document.querySelectorAll('.btn-cancel-att').forEach(btn => btn.addEventListener('click', cancelEditAttendance));
+    }
+
+    // --- CHỨC NĂNG MỚI: SỬA/XÓA CHẤM CÔNG ---
+    function deleteAttendance(event) {
+        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
+        const id = event.currentTarget.getAttribute('data-id');
+        if (confirm('Bạn có chắc chắn muốn xóa lượt chấm công này không? Hành động này không thể hoàn tác.')) {
+            showLoading();
+            db.collection('attendance').doc(id).delete()
+                .then(() => {
+                    hideLoading();
+                    alert('Đã xóa lượt chấm công.');
+                    // Không cần gọi lại loadAttendance() vì onSnapshot sẽ tự động cập nhật
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error("Lỗi xóa chấm công: ", err);
+                    alert('Đã xảy ra lỗi khi xóa.');
+                });
+        }
+    }
+
+    function editAttendance(event) {
+        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
+        const id = event.currentTarget.getAttribute('data-id');
+        isEditingAttendance = { [id]: true }; // Chỉ cho phép sửa một dòng tại một thời điểm
+        populateAttendanceTable();
+    }
+
+    function cancelEditAttendance(event) {
+        const id = event.currentTarget.getAttribute('data-id');
+        delete isEditingAttendance[id];
+        populateAttendanceTable();
+    }
+
+    function saveAttendance(event) {
+        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
+        const id = event.currentTarget.getAttribute('data-id');
+        const newCheckIn = document.getElementById(`edit-checkin-${id}`).value || null;
+        const newCheckOut = document.getElementById(`edit-checkout-${id}`).value || null;
+        const newNote = document.getElementById(`edit-note-${id}`).value.trim() || null;
+
+        showLoading();
+        db.collection('attendance').doc(id).update({ checkIn: newCheckIn, checkOut: newCheckOut, lateReason: newNote, edited: true })
+            .then(() => {
+                delete isEditingAttendance[id];
+                hideLoading();
+                alert('Đã cập nhật lượt chấm công.');
+            })
+            .catch(err => { hideLoading(); console.error(err); alert('Lỗi cập nhật.'); });
     }
 
     // Add employee with auto username and default password (giữ nguyên)
