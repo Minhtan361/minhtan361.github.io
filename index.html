@@ -33,6 +33,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Thư viện mới để chụp ảnh HTML và tạo file ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- THÊM MỚI: Thư viện cho hiệu ứng nền 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
     /* Nâng cấp giao diện hiện đại */
@@ -51,8 +57,18 @@
 
     body {
         font-family: 'Inter', sans-serif;
-        background-color: var(--bg-body);
+        background-color: transparent; /* Nền trong suốt để thấy hiệu ứng 3D */
         color: #333;
+    }
+
+    /* THÊM MỚI: CSS cho nền 3D */
+    #vanta-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Đặt canvas nằm dưới cùng */
     }
 
     /* Navbar */
@@ -65,6 +81,12 @@
         font-size: 1.2rem;
         color: #fff !important;
     }
+    .navbar-nav .nav-link {
+        color: rgba(255,255,255,0.8);
+    }
+    .navbar-nav .nav-link:hover {
+        color: #fff;
+    }
     .navbar .btn {
         border-radius: 50px;
         font-weight: 600;
@@ -72,14 +94,19 @@
 
     /* Card */
     .card {
-        border: none;
+        /* NÂNG CẤP: Hiệu ứng thủy tinh mờ (Glassmorphism) */
+        background: rgba(255, 255, 255, 0.65);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: var(--radius);
         box-shadow: var(--card-shadow);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+        /* NÂNG CẤP: Đổ bóng nhẹ hơn cho hiệu ứng thủy tinh */
+        box-shadow: 0 12px 25px rgba(0,0,0,0.08);
     }
     .card-header {
         font-weight: 600;
@@ -89,8 +116,9 @@
     /* Clock */
     .clock-display {
         font-size: 3rem;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--secondary-color);
+        letter-spacing: -1px;
     }
 
     /* Buttons */
@@ -123,19 +151,21 @@
         color: #fff;
         font-weight: 600;
     }
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #fafafa;
+    .table td, .table th {
+        padding: 0.9rem 0.75rem; /* Tăng padding cho dễ đọc */
+        vertical-align: middle;
     }
-    .table-hover tbody tr:hover {
-        background-color: #f1f1f1;
+    .table-striped>tbody>tr:nth-of-type(odd)>* {
+        background-color: rgba(255, 255, 255, 0.5);
     }
 
     /* Payslip */
     .payslip {
         border-radius: var(--radius);
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
         padding: 25px;
         background: #fff;
+        border: 1px solid #eee;
     }
     .payslip h4, .payslip h5 {
         color: var(--primary-color);
@@ -166,17 +196,58 @@
         box-shadow: 0 0 0 0.2rem rgba(63,81,181,0.25);
     }
 
+    /* NÂNG CẤP: Modal */
+    .modal-content {
+        background: rgba(255, 255, 255, 0.8);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: var(--radius);
+    }
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .modal-footer {
+        background-color: rgba(248, 249, 250, 0.7);
+        border-top: 1px solid rgba(0,0,0,0.08);
+        border-radius: 0 0 var(--radius) var(--radius);
+    }
+
     /* Custom styles for new features */
     .attendance-history-panel {
         display: none;
     }
+
+    /* Language Switcher */
+    .dropdown-item img {
+        width: 20px;
+        margin-right: 8px;
+    }
+    .dropdown-menu {
+        border-radius: 12px;
+    }
     </style>
 </head>
+
 <body>
+    <!-- THÊM MỚI: Vùng chứa cho hiệu ứng nền 3D -->
+    <div id="vanta-bg"></div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-business-time me-2"></i>Chấm Công Thai Thae - minhtan361</a>
-            <button class="btn btn-outline-light" id="adminToggle"><i class="fas fa-user-shield me-1"></i>Chế độ Admin</button>
+            <a class="navbar-brand" href="#"><i class="fas fa-business-time me-2"></i><span data-lang-key="app_title">Chấm Công Thai Thae - minhtan361</span></a>
+            <div class="d-flex align-items-center">
+                <div class="dropdown me-3">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="setLanguage('vi')"><img src="https://cdn-icons-png.flaticon.com/512/555/555515.png" alt="VN"> Tiếng Việt</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setLanguage('en')"><img src="https://cdn-icons-png.flaticon.com/512/555/555417.png" alt="EN"> English</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setLanguage('th')"><img src="https://cdn-icons-png.flaticon.com/512/555/555416.png" alt="TH"> ภาษาไทย</a></li>
+                    </ul>
+                </div>
+                <button class="btn btn-outline-light" id="adminToggle"><i class="fas fa-user-shield me-1"></i><span data-lang-key="admin_mode">Chế độ Admin</span></button>
+            </div>
         </div>
     </nav>
 
@@ -187,46 +258,49 @@
             <div class="col-md-5"> 
                 <div class="card mb-4">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Thời gian hiện tại</h5>
+                        <h5 class="card-title text-muted" data-lang-key="current_time">Thời gian hiện tại</h5>
                         <div class="clock-display" id="currentTime">00:00:00</div>
                         <div id="currentDate" class="text-secondary fw-light"></div>
                     </div>
                 </div>
 
                 <div class="card mb-4">
-                    <div class="card-header bg-success text-white"><h5 class="mb-0"><i class="fas fa-fingerprint me-2"></i>Khu vực Chấm công</h5></div>
+                    <div class="card-header bg-success text-white"><h5 class="mb-0"><i class="fas fa-fingerprint me-2"></i><span data-lang-key="attendance_area">Khu vực Chấm công</span></h5></div>
                     <div class="card-body">
                         <div id="loginArea">
-                            <h6 class="mb-3 text-secondary">Đăng nhập để Chấm công</h6>
+                            <h6 class="mb-3 text-secondary" data-lang-key="login_prompt">Đăng nhập để Chấm công</h6>
                             <div class="row g-3 align-items-end">
-                                <div class="col-12"><label class="small">Username</label><input class="form-control" id="loginUsername" placeholder="ví dụ: quynhanh, phuoclong ,..."></div>
-                                <div class="col-12"><label class="small">Mật khẩu</label><input type="password" class="form-control" id="loginPassword" placeholder="mật khẩu: thaithae"></div>
-                                <div class="col-12 d-flex gap-2"><button class="btn btn-primary w-100" id="loginBtn">Đăng nhập</button><button class="btn btn-outline-secondary w-100" id="loginByIdBtn">Đăng nhập bằng ID</button></div>
+                                <div class="col-12"><label class="small" data-lang-key="username">Username</label><input class="form-control" id="loginUsername" data-lang-placeholder="username_placeholder"></div>
+                                <div class="col-12"><label class="small" data-lang-key="password">Mật khẩu</label><input type="password" class="form-control" id="loginPassword" data-lang-placeholder="password_placeholder"></div>
+                                <div class="col-12 d-flex gap-2">
+                                    <button class="btn btn-primary w-100" id="loginBtn"><span data-lang-key="login">Đăng nhập</span></button>
+                                    <button class="btn btn-outline-secondary w-100" id="loginByIdBtn"><span data-lang-key="login_by_id">Đăng nhập bằng ID</span></button>
+                                </div>
                             </div>
                             <div class="mt-3" id="loginMessage"></div>
                         </div>
 
                         <div id="clockingArea" class="d-none text-center">
-                            <h4 class="mb-3">Xin chào, <strong id="loggedName" class="text-primary"></strong> (<span id="loggedPosition"></span>)</h4>
-                            <p class="text-danger small">Ca làm mặc định: <strong id="loggedShift"></strong></p>
+                            <h4 class="mb-3"><span data-lang-key="hello">Xin chào</span>, <strong id="loggedName" class="text-primary"></strong> (<span id="loggedPosition"></span>)</h4>
+                            <p class="text-danger small"><span data-lang-key="default_shift">Ca làm mặc định</span>: <strong id="loggedShift"></strong></p>
 
                             <div class="mb-3 text-start">
-                                <label for="shiftSelect" class="form-label small fw-bold"><i class="fas fa-calendar-check me-1"></i>1. Chọn ca làm hôm nay:</label>
+                                <label for="shiftSelect" class="form-label small fw-bold"><i class="fas fa-calendar-check me-1"></i><span data-lang-key="step1_shift">1. Chọn ca làm hôm nay:</span></label>
                                 <select class="form-select" id="shiftSelect"></select>
                             </div>
                             <div class="mb-3 text-start">
-                                <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i>2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):</label>
-                                <textarea class="form-control" id="lateReason" rows="1" placeholder="Em xin đi muộn 30p do bận việc..."></textarea>
-                                <small class="text-muted">Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn. <span id="lateNotesRemaining"></span></small>
-                                <button class="btn btn-warning btn-sm w-100 mt-2" id="submitLateRequestBtn"><i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu</button> 
+                                <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i><span data-lang-key="step2_late_reason">2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):</span></label>
+                                <textarea class="form-control" id="lateReason" rows="1" data-lang-placeholder="late_reason_placeholder"></textarea>
+                                <small class="text-muted" data-lang-key="late_reason_note">Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn. <span id="lateNotesRemaining"></span></small>
+                                <button class="btn btn-warning btn-sm w-100 mt-2" id="submitLateRequestBtn"><i class="fas fa-paper-plane me-2"></i><span data-lang-key="send_request">Gửi yêu cầu</span></button> 
                             </div>
 
                             <div class="clocking-buttons d-flex gap-3 justify-content-center">
-                                <button class="btn btn-success btn-lg w-50" id="checkInBtn"><i class="fas fa-sign-in-alt me-2"></i>Vào</button>
-                                <button class="btn btn-danger btn-lg w-50" id="checkOutBtn"><i class="fas fa-sign-out-alt me-2"></i>Ra</button>
+                                <button class="btn btn-success btn-lg w-50" id="checkInBtn"><i class="fas fa-sign-in-alt me-2"></i><span data-lang-key="check_in">Vào</span></button>
+                                <button class="btn btn-danger btn-lg w-50" id="checkOutBtn"><i class="fas fa-sign-out-alt me-2"></i><span data-lang-key="check_out">Ra</span></button>
                             </div>
-                            <div class="mt-3"><button class="btn btn-secondary btn-sm" id="logoutBtn">Thoát phiên</button></div>
-                            <p class="mt-2 small text-muted">Phiên đăng nhập còn hiệu lực 361</p>
+                            <div class="mt-3"><button class="btn btn-secondary btn-sm" id="logoutBtn"><span data-lang-key="logout">Thoát phiên</span></button></div>
+                            <p class="mt-2 small text-muted" data-lang-key="session_info">Phiên đăng nhập còn hiệu lực 361</p>
                         </div>
                     </div>
                 </div>
@@ -235,104 +309,104 @@
             <div class="col-md-7" id="adminDashboardPanel" style="display:none;">
                 <div class="card">
                     <div class="card-header bg-secondary-color text-white" style="background-color: var(--secondary-color) !important;">
-                        <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i>Bảng Điều Khiển Quản Trị</h5>
+                        <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i><span data-lang-key="admin_dashboard">Bảng Điều Khiển Quản Trị</span></h5>
                     </div>
                     <div class="card-body">
                         <div class="admin-verification-area mb-4" id="adminVerificationArea">
-                            <h6 class="mb-3 text-primary"><i class="fas fa-lock me-2"></i>Xác minh Admin</h6>
+                            <h6 class="mb-3 text-primary"><i class="fas fa-lock me-2"></i><span data-lang-key="verify_admin_title">Xác minh Admin</span></h6>
                             <div class="input-group">
-                                <input type="password" class="form-control" id="adminCode" placeholder="Nhập mã khóa admin">
-                                <button class="btn btn-primary" id="verifyAdmin"><i class="fas fa-check me-1"></i>Xác nhận</button>
+                                <input type="password" class="form-control" id="adminCode" data-lang-placeholder="admin_code_placeholder">
+                                <button class="btn btn-primary" id="verifyAdmin"><i class="fas fa-check me-1"></i><span data-lang-key="confirm">Xác nhận</span></button>
                             </div>
                         </div>
 
                         <div class="admin-tabs d-none" id="adminFeatures">
                             <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-                                <li class="nav-item"><button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data-content" type="button"><i class="fas fa-table me-1"></i>1. Dữ liệu & Tính lương</button></li>
-                                <li class="nav-item"><button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-content" type="button"><i class="fas fa-cogs me-1"></i>2. Cài đặt & Nhân viên</button></li>
+                                <li class="nav-item"><button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data-content" type="button"><i class="fas fa-table me-1"></i><span data-lang-key="tab_data_payroll">1. Dữ liệu & Tính lương</span></button></li>
+                                <li class="nav-item"><button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-content" type="button"><i class="fas fa-cogs me-1"></i><span data-lang-key="tab_settings_employee">2. Cài đặt & Nhân viên</span></button></li>
                             </ul>
                             <div class="tab-content pt-3" id="adminTabsContent">
                                 
                                 <div class="tab-pane fade show active" id="data-content" role="tabpanel">
-                                    <h6 class="text-primary mb-3"><i class="fas fa-filter me-1"></i>Bộ lọc Dữ liệu</h6>
+                                    <h6 class="text-primary mb-3"><i class="fas fa-filter me-1"></i><span data-lang-key="data_filter">Bộ lọc Dữ liệu</span></h6>
                                     <div class="row mb-3 g-3 align-items-end">
-                                        <div class="col-md-2"><label class="small">Từ ngày</label><input type="date" class="form-control" id="startDate"></div>
-                                        <div class="col-md-2"><label class="small">Đến ngày</label><input type="date" class="form-control" id="endDate"></div>
-                                        <div class="col-md-3"><label class="small">Chức vụ</label><select class="form-select" id="exportPosition"><option value="all">Tất cả</option></select></div>
-                                        <div class="col-md-3"><label class="small">Nhân viên</label><select class="form-select" id="exportEmployee"><option value="all">Tất cả</option></select></div>
+                                        <div class="col-md-2"><label class="small" data-lang-key="from_date">Từ ngày</label><input type="date" class="form-control" id="startDate"></div>
+                                        <div class="col-md-2"><label class="small" data-lang-key="to_date">Đến ngày</label><input type="date" class="form-control" id="endDate"></div>
+                                        <div class="col-md-3"><label class="small" data-lang-key="position">Chức vụ</label><select class="form-select" id="exportPosition"><option value="all" data-lang-key="all_positions">Tất cả</option></select></div>
+                                        <div class="col-md-3"><label class="small" data-lang-key="employee">Nhân viên</label><select class="form-select" id="exportEmployee"><option value="all" data-lang-key="all_employees">Tất cả</option></select></div>
                                         <div class="col-md-2">
-                                            <button class="btn btn-info w-100" id="applyFilterBtn"><i class="fas fa-filter me-2"></i>Áp dụng</button>
+                                            <button class="btn btn-info w-100" id="applyFilterBtn"><i class="fas fa-filter me-2"></i><span data-lang-key="apply">Áp dụng</span></button>
                                         </div>
                                     </div>
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-table me-2"></i>Dữ liệu Chấm công</h5>
+                                    <h5 class="mt-4 text-primary"><i class="fas fa-table me-2"></i><span data-lang-key="attendance_data">Dữ liệu Chấm công</span></h5>
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-sm small" id="attendanceTable"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Ca</th><th>Giờ vào</th><th>Giờ ra</th><th>Giờ làm</th><th>Trạng thái</th><th>Ghi chú/Xin phép</th><th>Hành động</th></tr></thead><tbody></tbody></table>
+                                        <table class="table table-striped table-sm small" id="attendanceTable"><thead><tr><th data-lang-key="col_date">Ngày</th><th data-lang-key="col_employee">Nhân viên</th><th data-lang-key="col_shift">Ca</th><th data-lang-key="col_checkin">Giờ vào</th><th data-lang-key="col_checkout">Giờ ra</th><th data-lang-key="col_workhours">Giờ làm</th><th data-lang-key="col_status">Trạng thái</th><th data-lang-key="col_notes">Ghi chú/Xin phép</th><th data-lang-key="col_actions">Hành động</th></tr></thead><tbody></tbody></table>
                                     </div>
-                                    <button class="btn btn-primary btn-sm w-100" id="exportBtn"><i class="fas fa-file-excel me-2"></i>Xuất Excel Dữ liệu Chấm công</button>
+                                    <button class="btn btn-primary btn-sm w-100" id="exportBtn"><i class="fas fa-file-excel me-2"></i><span data-lang-key="export_attendance_excel">Xuất Excel Dữ liệu Chấm công</span></button>
 
                                     <div class="mt-4 text-center">
-                                        <button class="btn btn-success btn-lg" id="computePayrollBtn"><i class="fas fa-calculator me-2"></i>TÍNH LƯƠNG</button>
-                                        <button class="btn btn-primary btn-lg d-none" id="printPayrollBtn"><i class="fas fa-print me-2"></i>IN/XUẤT BẢNG LƯƠNG</button>
+                                        <button class="btn btn-success btn-lg" id="computePayrollBtn"><i class="fas fa-calculator me-2"></i><span data-lang-key="calculate_payroll">TÍNH LƯƠNG</span></button>
+                                        <button class="btn btn-primary btn-lg d-none" id="printPayrollBtn"><i class="fas fa-print me-2"></i><span data-lang-key="print_export_payroll">IN/XUẤT BẢNG LƯƠNG</span></button>
                                     </div>
 
                                     <div class="mt-4" id="payrollResultArea" style="display:none">
-                                        <h5 class="text-success"><i class="fas fa-money-check-alt me-2"></i>Bảng lương chi tiết</h5>
+                                        <h5 class="text-success"><i class="fas fa-money-check-alt me-2"></i><span data-lang-key="detailed_payroll">Bảng lương chi tiết</span></h5>
                                         <div id="payrollResult"></div>
                                     </div>
                                 </div>
 
                                 <div class="tab-pane fade" id="settings-content" role="tabpanel">
-                                    <h5 class="mb-3 text-primary"><i class="fas fa-users-cog me-1"></i>Quản lý nhân viên</h5>
-                                    <p class="text-danger small">* Khi tạo nhân viên hệ thống tự tạo username và mật khẩu mặc định: <strong>thaithae</strong></p>
+                                    <h5 class="mb-3 text-primary"><i class="fas fa-users-cog me-1"></i><span data-lang-key="employee_management">Quản lý nhân viên</span></h5>
+                                    <p class="text-danger small" data-lang-key="add_employee_note">* Khi tạo nhân viên hệ thống tự tạo username và mật khẩu mặc định: <strong>thaithae</strong></p>
 
                                     <div class="row mb-3 g-2 align-items-end">
-                                        <div class="col-md-3"><label class="small">Tên nhân viên</label><input type="text" class="form-control" id="employeeName" placeholder="Tên nhân viên"></div>
-                                        <div class="col-md-3"><label class="small">Chức vụ</label><input type="text" class="form-control" id="employeePosition" placeholder="Chức vụ"></div>
-                                        <div class="col-md-2"><label class="small">Lương cơ bản</label><input type="number" class="form-control" id="employeeBaseSalary" placeholder="Lương (VND)"></div>
-                                        <div class="col-md-2"><label class="small">Ca mặc định</label>
+                                        <div class="col-md-3"><label class="small" data-lang-key="employee_name">Tên nhân viên</label><input type="text" class="form-control" id="employeeName" data-lang-placeholder="employee_name_placeholder"></div>
+                                        <div class="col-md-3"><label class="small" data-lang-key="position">Chức vụ</label><input type="text" class="form-control" id="employeePosition" data-lang-placeholder="position_placeholder"></div>
+                                        <div class="col-md-2"><label class="small" data-lang-key="base_salary">Lương cơ bản</label><input type="number" class="form-control" id="employeeBaseSalary" data-lang-placeholder="salary_placeholder"></div>
+                                        <div class="col-md-2"><label class="small" data-lang-key="default_shift">Ca mặc định</label>
                                             <select class="form-select" id="employeeShift">
                                                 <option value="shift1">Ca 1</option><option value="shift2">Ca 2</option><option value="shift3">Ca 3</option>
                                                 <option value="shift4">Ca 4</option><option value="shift5">Ca 5</option>
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <button class="btn btn-success w-100" id="addEmployee"><i class="fas fa-user-plus"></i> Thêm</button>
+                                            <button class="btn btn-success w-100" id="addEmployee"><i class="fas fa-user-plus"></i> <span data-lang-key="add">Thêm</span></button>
                                         </div>
                                     </div>
 
                                     <div class="table-responsive mb-4">
                                         <table class="table table-striped table-hover small" id="employeesTable">
-                                            <thead class="bg-light"><tr><th>ID</th><th>Tên</th><th>Username</th><th>Chức vụ</th><th>Ca mặc định</th><th>Lương cơ bản</th><th>Hành động</th></tr></thead>
+                                            <thead class="bg-light"><tr><th data-lang-key="col_id">ID</th><th data-lang-key="col_name">Tên</th><th data-lang-key="col_username">Username</th><th data-lang-key="col_position">Chức vụ</th><th data-lang-key="col_default_shift">Ca mặc định</th><th data-lang-key="col_base_salary">Lương cơ bản</th><th data-lang-key="col_actions">Hành động</th></tr></thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
 
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i>Cài đặt tính lương</h5>
+                                    <h5 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i><span data-lang-key="payroll_settings">Cài đặt tính lương</span></h5>
                                     <div class="row mb-3 g-2">
-                                        <div class="col-md-4"><label class="small">Lương theo giờ (VND)</label><input type="number" id="wagePerHour" class="form-control" placeholder="Lương theo giờ (VND)"></div>
-                                        <div class="col-md-4"><label class="small">Thưởng mặc định (VND)</label><input type="number" id="defaultBonus" class="form-control" placeholder="Thưởng mặc định (VND)"></div>
-                                        <div class="col-md-4"><label class="small">Phạt chung (VND)</label><input type="number" id="defaultPenalty" class="form-control" placeholder="Phạt chung (VND)"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="wage_per_hour">Lương theo giờ (VND)</label><input type="number" id="wagePerHour" class="form-control" data-lang-placeholder="wage_per_hour_placeholder"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="default_bonus">Thưởng mặc định (VND)</label><input type="number" id="defaultBonus" class="form-control" data-lang-placeholder="default_bonus_placeholder"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="default_penalty">Phạt chung (VND)</label><input type="number" id="defaultPenalty" class="form-control" data-lang-placeholder="default_penalty_placeholder"></div>
                                     </div>
                                     <div class="row mb-3 g-2">
-                                        <div class="col-md-4"><label class="small">Phạt đi muộn (VND)</label><input type="number" id="latePenalty" class="form-control" placeholder="Phạt 10000"></div>
-                                        <div class="col-md-4"><label class="small">Phạt sửa/quên công (VND)</label><input type="number" id="editPenalty" class="form-control" placeholder="Phạt 20000"></div>
-                                        <div class="col-md-4"><label class="small">Phạt quên chấm ra (VND)</label><input type="number" id="forgotOutPenalty" class="form-control" placeholder="Phạt 20000"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="late_penalty">Phạt đi muộn (VND)</label><input type="number" id="latePenalty" class="form-control" data-lang-placeholder="late_penalty_placeholder"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="edit_penalty">Phạt sửa/quên công (VND)</label><input type="number" id="editPenalty" class="form-control" data-lang-placeholder="edit_penalty_placeholder"></div>
+                                        <div class="col-md-4"><label class="small" data-lang-key="forgot_checkout_penalty">Phạt quên chấm ra (VND)</label><input type="number" id="forgotOutPenalty" class="form-control" data-lang-placeholder="forgot_checkout_penalty_placeholder"></div>
                                     </div>
                                     <div class="row mb-3 g-2">
-                                        <div class="col-12"><label class="small">Minhtan config:</label><input type="text" class="form-control" id="wifiIpAddress" placeholder="Nhập địa chỉ IP công cộng của quán (ví dụ: 103.111.200.222)"></div>
+                                        <div class="col-12"><label class="small" data-lang-key="wifi_ip_config">Minhtan config:</label><input type="text" class="form-control" id="wifiIpAddress" data-lang-placeholder="wifi_ip_placeholder"></div>
                                     </div>
 
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-calendar-alt me-1"></i>Danh sách ngày lễ (Lương x2)</h5>
+                                    <h5 class="mt-4 text-primary"><i class="fas fa-calendar-alt me-1"></i><span data-lang-key="holiday_list">Danh sách ngày lễ (Lương x2)</span></h5>
                                     <div class="row mb-3 g-2">
-                                        <div class="col-md-8"><input type="text" id="holidayList" class="form-control" rows="1" placeholder="YYYY-MM-DD, cách nhau bằng dấu phẩy hoặc xuống dòng"></div>
-                                        <div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary w-100" id="saveSettings">Lưu Cài đặt Chung</button></div>
+                                        <div class="col-md-8"><input type="text" id="holidayList" class="form-control" rows="1" data-lang-placeholder="holiday_list_placeholder"></div>
+                                        <div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary w-100" id="saveSettings"><span data-lang-key="save_general_settings">Lưu Cài đặt Chung</span></button></div>
                                     </div>
                                     <p class="small text-muted" id="currentHolidays"></p>
 
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-tools me-1"></i>Thao tác bảo trì</h5>
+                                    <h5 class="mt-4 text-primary"><i class="fas fa-tools me-1"></i><span data-lang-key="maintenance_actions">Thao tác bảo trì</span></h5>
                                     <div class="row mt-3 g-2">
-                                        <div class="col-md-6"><button class="btn btn-danger w-100" id="clearDataBtn"><i class="fas fa-trash me-1"></i>Xóa dữ liệu chấm công</button></div>
-                                        <div class="col-md-6"><button class="btn btn-secondary w-100" id="forceLogoutAll"><i class="fas fa-sign-out-alt me-1"></i>Đăng xuất tất cả phiên</button></div>
+                                        <div class="col-md-6"><button class="btn btn-danger w-100" id="clearDataBtn"><i class="fas fa-trash me-1"></i><span data-lang-key="delete_attendance_data">Xóa dữ liệu chấm công</span></button></div>
+                                        <div class="col-md-6"><button class="btn btn-secondary w-100" id="forceLogoutAll"><i class="fas fa-sign-out-alt me-1"></i><span data-lang-key="force_logout_all">Đăng xuất tất cả phiên</span></button></div>
                                     </div>
                                 </div>
                             </div>
@@ -344,19 +418,19 @@
             <div class="col-md-7 attendance-history-panel" id="personalAttendancePanel">
                 <div class="card">
                     <div class="card-header bg-secondary-color text-white" style="background-color: var(--secondary-color) !important;">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử Chấm công của bạn</h5>
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i><span data-lang-key="your_attendance_history">Lịch sử Chấm công của bạn</span></h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-striped table-sm small" id="personalAttendanceTable">
                                 <thead>
                                     <tr>
-                                        <th>Ngày</th>
-                                        <th>Ca</th>
-                                        <th>Giờ vào</th>
-                                        <th>Giờ ra</th>
-                                        <th>Giờ làm</th>
-                                        <th>Trạng thái</th>
+                                        <th data-lang-key="col_date">Ngày</th>
+                                        <th data-lang-key="col_shift">Ca</th>
+                                        <th data-lang-key="col_checkin">Giờ vào</th>
+                                        <th data-lang-key="col_checkout">Giờ ra</th>
+                                        <th data-lang-key="col_workhours">Giờ làm</th>
+                                        <th data-lang-key="col_status">Trạng thái</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -372,23 +446,22 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="printExportModalLabel">In / Xuất Bảng Lương</h5>
+                    <h5 class="modal-title" id="printExportModalLabel" data-lang-key="print_export_payroll">In / Xuất Bảng Lương</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="payslipContainer"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="printAllPayslipsBtn"><i class="fas fa-print"></i> In tất cả Phiếu lương</button>
-                    <button type="button" class="btn btn-success" id="exportPayslipExcelBtn"><i class="fas fa-file-excel"></i> Xuất Bảng lương Tổng hợp Excel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-lang-key="close">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="downloadPayslipsZipBtn"><i class="fas fa-file-archive"></i> <span data-lang-key="download_zip">Tải về ảnh PNG (ZIP)</span></button>
+                    <button type="button" class="btn btn-success" id="exportPayslipExcelBtn"><i class="fas fa-file-excel"></i> <span data-lang-key="export_summary_excel">Xuất Bảng lương Tổng hợp Excel</span></button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-    // Firebase config (giữ nguyên)
     const firebaseConfig = {
       apiKey: "AIzaSyD3LxaZzvFsbtzA4VRYjVWvIOdqgyNYO2o",
       authDomain: "quan-ly-cham-cong-105da.firebaseapp.com",
@@ -401,6 +474,102 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+
+    // SỬA LỖI: Di chuyển khối ngôn ngữ vào đây
+    const translations = {
+        'vi': {
+            "app_title": "Chấm Công Thai Thae - minhtan361", "admin_mode": "Chế độ Admin", "current_time": "Thời gian hiện tại", "attendance_area": "Khu vực Chấm công",
+            "login_prompt": "Đăng nhập để Chấm công", "username": "Username", "password": "Mật khẩu", "login": "Đăng nhập", "login_by_id": "Đăng nhập bằng ID",
+            "username_placeholder": "ví dụ: quynhanh, phuoclong,...", "password_placeholder": "mật khẩu: thaithae",
+            "hello": "Xin chào", "default_shift": "Ca làm mặc định", "step1_shift": "1. Chọn ca làm hôm nay:", "step2_late_reason": "2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):",
+            "late_reason_placeholder": "Em xin đi muộn 30p do bận việc...", "late_reason_note": "Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn.",
+            "send_request": "Gửi yêu cầu", "check_in": "Vào", "check_out": "Ra", "logout": "Thoát phiên", "session_info": "Phiên đăng nhập còn hiệu lực 361",
+            "admin_dashboard": "Bảng Điều Khiển Quản Trị", "verify_admin_title": "Xác minh Admin", "admin_code_placeholder": "Nhập mã khóa admin", "confirm": "Xác nhận",
+            "tab_data_payroll": "1. Dữ liệu & Tính lương", "tab_settings_employee": "2. Cài đặt & Nhân viên", "data_filter": "Bộ lọc Dữ liệu",
+            "from_date": "Từ ngày", "to_date": "Đến ngày", "position": "Chức vụ", "employee": "Nhân viên", "all_positions": "Tất cả chức vụ", "all_employees": "Tất cả nhân viên",
+            "apply": "Áp dụng", "attendance_data": "Dữ liệu Chấm công", "col_date": "Ngày", "col_employee": "Nhân viên", "col_shift": "Ca", "col_checkin": "Giờ vào", "col_checkout": "Giờ ra", "col_workhours": "Giờ làm", "col_status": "Trạng thái", "col_notes": "Ghi chú/Xin phép", "col_actions": "Hành động",
+            "export_attendance_excel": "Xuất Excel Dữ liệu Chấm công", "calculate_payroll": "TÍNH LƯƠNG", "print_export_payroll": "IN/XUẤT BẢNG LƯƠNG", "detailed_payroll": "Bảng lương chi tiết",
+            "employee_management": "Quản lý nhân viên", "add_employee_note": "* Khi tạo nhân viên hệ thống tự tạo username và mật khẩu mặc định: thaithae",
+            "employee_name": "Tên nhân viên", "employee_name_placeholder": "Tên nhân viên", "position_placeholder": "Chức vụ", "base_salary": "Lương cơ bản", "salary_placeholder": "Lương (VND)",
+            "default_shift": "Ca mặc định", "add": "Thêm", "col_id": "ID", "col_name": "Tên", "col_username": "Username", "col_position": "Chức vụ", "col_default_shift": "Ca mặc định", "col_base_salary": "Lương cơ bản",
+            "payroll_settings": "Cài đặt tính lương", "wage_per_hour": "Lương theo giờ (VND)", "wage_per_hour_placeholder": "Lương theo giờ (VND)", "default_bonus": "Thưởng mặc định (VND)", "default_bonus_placeholder": "Thưởng mặc định (VND)",
+            "default_penalty": "Phạt chung (VND)", "default_penalty_placeholder": "Phạt chung (VND)", "late_penalty": "Phạt đi muộn (VND)", "late_penalty_placeholder": "Phạt 10000",
+            "edit_penalty": "Phạt sửa/quên công (VND)", "edit_penalty_placeholder": "Phạt 20000", "forgot_checkout_penalty": "Phạt quên chấm ra (VND)", "forgot_checkout_penalty_placeholder": "Phạt 20000",
+            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "Nhập địa chỉ IP công cộng của quán (ví dụ: 103.111.200.222)",
+            "holiday_list": "Danh sách ngày lễ (Lương x2)", "holiday_list_placeholder": "YYYY-MM-DD, cách nhau bằng dấu phẩy hoặc xuống dòng", "save_general_settings": "Lưu Cài đặt Chung",
+            "maintenance_actions": "Thao tác bảo trì", "delete_attendance_data": "Xóa dữ liệu chấm công", "force_logout_all": "Đăng xuất tất cả phiên",
+            "your_attendance_history": "Lịch sử Chấm công của bạn", "close": "Đóng", "download_zip": "Tải về ảnh PNG (ZIP)", "export_summary_excel": "Xuất Bảng lương Tổng hợp Excel",
+            "save": "Lưu", "cancel": "Hủy", "edit": "Sửa", "delete": "Xóa"
+        },
+        'en': {
+            "app_title": "Attendance - Thai Thae - minhtan361", "admin_mode": "Admin Mode", "current_time": "Current Time", "attendance_area": "Attendance Area",
+            "login_prompt": "Login to Clock-in", "username": "Username", "password": "Password", "login": "Login", "login_by_id": "Login by ID",
+            "username_placeholder": "e.g., quynhanh, phuoclong,...", "password_placeholder": "password: thaithae",
+            "hello": "Hello", "default_shift": "Default Shift", "step1_shift": "1. Select today's shift:", "step2_late_reason": "2. Request for being late (Write before clock-in, limit 2/week):",
+            "late_reason_placeholder": "I'll be 30 mins late due to...", "late_reason_note": "This note will waive the 10,000 VND late penalty if you clock in late.",
+            "send_request": "Send Request", "check_in": "Check-in", "check_out": "Check-out", "logout": "Logout", "session_info": "Session is valid for 361",
+            "admin_dashboard": "Admin Dashboard", "verify_admin_title": "Admin Verification", "admin_code_placeholder": "Enter admin key", "confirm": "Confirm",
+            "tab_data_payroll": "1. Data & Payroll", "tab_settings_employee": "2. Settings & Employees", "data_filter": "Data Filter",
+            "from_date": "From date", "to_date": "To date", "position": "Position", "employee": "Employee", "all_positions": "All Positions", "all_employees": "All Employees",
+            "apply": "Apply", "attendance_data": "Attendance Data", "col_date": "Date", "col_employee": "Employee", "col_shift": "Shift", "col_checkin": "Check-in", "col_checkout": "Check-out", "col_workhours": "Work Hours", "col_status": "Status", "col_notes": "Notes/Request", "col_actions": "Actions",
+            "export_attendance_excel": "Export Attendance Data to Excel", "calculate_payroll": "CALCULATE PAYROLL", "print_export_payroll": "PRINT/EXPORT PAYROLL", "detailed_payroll": "Detailed Payroll",
+            "employee_management": "Employee Management", "add_employee_note": "* When creating an employee, the system auto-creates a username and default password: thaithae",
+            "employee_name": "Employee Name", "employee_name_placeholder": "Employee Name", "position_placeholder": "Position", "base_salary": "Base Salary", "salary_placeholder": "Salary (VND)",
+            "default_shift": "Default Shift", "add": "Add", "col_id": "ID", "col_name": "Name", "col_username": "Username", "col_position": "Position", "col_default_shift": "Default Shift", "col_base_salary": "Base Salary",
+            "payroll_settings": "Payroll Settings", "wage_per_hour": "Wage per hour (VND)", "wage_per_hour_placeholder": "Wage per hour (VND)", "default_bonus": "Default Bonus (VND)", "default_bonus_placeholder": "Default Bonus (VND)",
+            "default_penalty": "General Penalty (VND)", "default_penalty_placeholder": "General Penalty (VND)", "late_penalty": "Late Penalty (VND)", "late_penalty_placeholder": "Penalty 10000",
+            "edit_penalty": "Edit/Forgot Penalty (VND)", "edit_penalty_placeholder": "Penalty 20000", "forgot_checkout_penalty": "Forgot Check-out Penalty (VND)", "forgot_checkout_penalty_placeholder": "Penalty 20000",
+            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "Enter public IP address of the store (e.g., 103.111.200.222)",
+            "holiday_list": "Holiday List (x2 Salary)", "holiday_list_placeholder": "YYYY-MM-DD, separated by comma or new line", "save_general_settings": "Save General Settings",
+            "maintenance_actions": "Maintenance Actions", "delete_attendance_data": "Delete Attendance Data", "force_logout_all": "Force Logout All Sessions",
+            "your_attendance_history": "Your Attendance History", "close": "Close", "download_zip": "Download as PNG (ZIP)", "export_summary_excel": "Export Payroll Summary to Excel",
+            "save": "Save", "cancel": "Cancel", "edit": "Edit", "delete": "Delete"
+        },
+        'th': {
+            "app_title": "เช็คชื่อ - Thai Thae - minhtan361", "admin_mode": "โหมดผู้ดูแล", "current_time": "เวลาปัจจุบัน", "attendance_area": "พื้นที่เช็คชื่อ",
+            "login_prompt": "เข้าสู่ระบบเพื่อลงเวลา", "username": "ชื่อผู้ใช้", "password": "รหัสผ่าน", "login": "เข้าสู่ระบบ", "login_by_id": "เข้าสู่ระบบด้วย ID",
+            "username_placeholder": "เช่น quynhanh, phuoclong,...", "password_placeholder": "รหัสผ่าน: thaithae",
+            "hello": "สวัสดี", "default_shift": "กะเริ่มต้น", "step1_shift": "1. เลือกกะทำงานวันนี้:", "step2_late_reason": "2. ขออนุญาตมาสาย (เขียนก่อนลงเวลาเข้า, จำกัด 2 ครั้ง/สัปดาห์):",
+            "late_reason_placeholder": "ฉันจะมาสาย 30 นาทีเพราะ...", "late_reason_note": "บันทึกนี้จะยกเว้นค่าปรับ 10,000 VND หากคุณมาสาย",
+            "send_request": "ส่งคำขอ", "check_in": "เข้างาน", "check_out": "ออกงาน", "logout": "ออกจากระบบ", "session_info": "เซสชันใช้งานได้ 361",
+            "admin_dashboard": "แดชบอร์ดผู้ดูแล", "verify_admin_title": "ยืนยันตัวตนผู้ดูแล", "admin_code_placeholder": "ป้อนรหัสผู้ดูแล", "confirm": "ยืนยัน",
+            "tab_data_payroll": "1. ข้อมูลและบัญชีเงินเดือน", "tab_settings_employee": "2. ตั้งค่าและพนักงาน", "data_filter": "ตัวกรองข้อมูล",
+            "from_date": "จากวันที่", "to_date": "ถึงวันที่", "position": "ตำแหน่ง", "employee": "พนักงาน", "all_positions": "ทุกตำแหน่ง", "all_employees": "พนักงานทั้งหมด",
+            "apply": "ใช้", "attendance_data": "ข้อมูลการลงเวลา", "col_date": "วันที่", "col_employee": "พนักงาน", "col_shift": "กะ", "col_checkin": "เวลาเข้า", "col_checkout": "เวลาออก", "col_workhours": "ชั่วโมงทำงาน", "col_status": "สถานะ", "col_notes": "หมายเหตุ/คำขอ", "col_actions": "การกระทำ",
+            "export_attendance_excel": "ส่งออกข้อมูลการลงเวลาเป็น Excel", "calculate_payroll": "คำนวณเงินเดือน", "print_export_payroll": "พิมพ์/ส่งออกสลิปเงินเดือน", "detailed_payroll": "รายละเอียดเงินเดือน",
+            "employee_management": "การจัดการพนักงาน", "add_employee_note": "* เมื่อสร้างพนักงาน ระบบจะสร้างชื่อผู้ใช้และรหัสผ่านเริ่มต้น: thaithae",
+            "employee_name": "ชื่อพนักงาน", "employee_name_placeholder": "ชื่อพนักงาน", "position_placeholder": "ตำแหน่ง", "base_salary": "เงินเดือนพื้นฐาน", "salary_placeholder": "เงินเดือน (VND)",
+            "default_shift": "กะเริ่มต้น", "add": "เพิ่ม", "col_id": "ID", "col_name": "ชื่อ", "col_username": "ชื่อผู้ใช้", "col_position": "ตำแหน่ง", "col_default_shift": "กะเริ่มต้น", "col_base_salary": "เงินเดือนพื้นฐาน",
+            "payroll_settings": "การตั้งค่าบัญชีเงินเดือน", "wage_per_hour": "ค่าจ้างต่อชั่วโมง (VND)", "wage_per_hour_placeholder": "ค่าจ้างต่อชั่วโมง (VND)", "default_bonus": "โบนัสเริ่มต้น (VND)", "default_bonus_placeholder": "โบนัสเริ่มต้น (VND)",
+            "default_penalty": "ค่าปรับทั่วไป (VND)", "default_penalty_placeholder": "ค่าปรับทั่วไป (VND)", "late_penalty": "ค่าปรับมาสาย (VND)", "late_penalty_placeholder": "ค่าปรับ 10000",
+            "edit_penalty": "ค่าปรับแก้ไข/ลืม (VND)", "edit_penalty_placeholder": "ค่าปรับ 20000", "forgot_checkout_penalty": "ค่าปรับลืมลงเวลาออก (VND)", "forgot_checkout_penalty_placeholder": "ค่าปรับ 20000",
+            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "ป้อนที่อยู่ IP สาธารณะของร้าน (เช่น 103.111.200.222)",
+            "holiday_list": "รายการวันหยุด (เงินเดือน x2)", "holiday_list_placeholder": "YYYY-MM-DD คั่นด้วยจุลภาคหรือขึ้นบรรทัดใหม่", "save_general_settings": "บันทึกการตั้งค่าทั่วไป",
+            "maintenance_actions": "การบำรุงรักษา", "delete_attendance_data": "ลบข้อมูลการลงเวลา", "force_logout_all": "บังคับออกจากระบบทุกเซสชัน",
+            "your_attendance_history": "ประวัติการลงเวลาของคุณ", "close": "ปิด", "download_zip": "ดาวน์โหลดเป็น PNG (ZIP)", "export_summary_excel": "ส่งออกสรุปเงินเดือนเป็น Excel",
+            "save": "บันทึก", "cancel": "ยกเลิก", "edit": "แก้ไข", "delete": "ลบ"
+        }
+    };
+
+    function setLanguage(lang) {
+        localStorage.setItem('language', lang);
+        const langData = translations[lang];
+        if (!langData) return;
+
+        document.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.getAttribute('data-lang-key');
+            if (langData[key]) {
+                el.textContent = langData[key];
+            }
+        });
+
+        document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-lang-placeholder');
+            if (langData[key]) {
+                el.placeholder = langData[key];
+            }
+        });
+    }
 
     // App state
     let employees = [];
@@ -827,7 +996,7 @@
                 const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
                 
                 if (r.edited) {
-                    status = 'Sửa công (xin phép admin)';
+                    status = 'Sửa công (Phạt 20k)';
                 } else if (!r.checkOut) {
                     status = 'Quên chấm ra (Phạt 20k)';
                 } else if (isEarlyOrOnTime) {
@@ -840,7 +1009,7 @@
                     } else if (r.lateReason) {
                         status = 'Đi muộn (Xin phép)'; 
                     } else {
-                        status = 'Đi muộn ';
+                        status = 'Đi muộn (Lỗi dữ liệu củ)';
                     }
                 } else {
                     status = 'Lỗi trạng thái'; 
@@ -1555,7 +1724,52 @@
         modal.show();
     }
 
-    function printAllPayslips(){ window.print(); }
+    // THAY THẾ: Chức năng tải phiếu lương dưới dạng file ZIP chứa ảnh PNG
+    async function downloadPayslipsAsZip() {
+        const payslips = document.querySelectorAll('.payslip');
+        if (payslips.length === 0) {
+            alert('Không có phiếu lương để tải.');
+            return;
+        }
+
+        const zip = new JSZip();
+        const downloadBtn = document.getElementById('downloadPayslipsZipBtn');
+        const originalBtnText = downloadBtn.innerHTML;
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...`;
+
+        try {
+            // SỬA LỖI: Dùng vòng lặp for...of để duyệt qua NodeList một cách an toàn và hiện đại.
+            let i = 0;
+            for (const slip of payslips) {
+                const empName = slip.querySelector('p strong').textContent.split('|')[0].trim().replace('Nhân viên:', '').trim();
+                
+                // Cập nhật tiến trình trên nút
+                downloadBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang chụp ảnh ${++i}/${payslips.length}...`;
+
+                const canvas = await html2canvas(slip, { scale: 2 }); // Tăng chất lượng ảnh
+                const pngData = canvas.toDataURL('image/png').split(',')[1];
+                
+                // Thêm ảnh vào file ZIP
+                zip.file(`${i}_${empName}.png`, pngData, { base64: true });
+            }
+
+            downloadBtn.innerHTML = `<i class="fas fa-file-archive"></i> Đang nén ZIP...`;
+            const content = await zip.generateAsync({ type: 'blob' });
+
+            const startDate = document.getElementById('startDate').value.replace(/-/g, '');
+            const endDate = document.getElementById('endDate').value.replace(/-/g, '');
+            const filename = `ngay${startDate}den${endDate}.zip`;
+
+            saveAs(content, filename); // Sử dụng hàm trợ giúp để tải file
+        } catch (error) {
+            console.error('Lỗi khi tạo file ZIP:', error);
+            alert('Đã xảy ra lỗi trong quá trình tạo file ZIP. Vui lòng thử lại.');
+        } finally {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = originalBtnText;
+        }
+    }
 
     // Export Payroll Excel (Cập nhật nhãn)
     function exportPayrollExcel(){ 
@@ -1609,6 +1823,14 @@
         XLSX.writeFile(wb, filename);
     }
 
+    // Hàm trợ giúp để tải file (thay thế cho FileSaver.js)
+    function saveAs(blob, filename) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
 
     // Init
     document.addEventListener('DOMContentLoaded', ()=>{
@@ -1626,6 +1848,20 @@
         document.getElementById('loginByIdBtn').addEventListener('click', loginById);
         document.getElementById('checkInBtn').addEventListener('click', checkIn);
         document.getElementById('checkOutBtn').addEventListener('click', checkOut);
+
+        // THÊM MỚI: Cho phép đăng nhập bằng phím Enter
+        function handleEnterLogin(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('loginBtn').click();
+            }
+        }
+        document.getElementById('loginUsername').addEventListener('keyup', handleEnterLogin);
+        document.getElementById('loginPassword').addEventListener('keyup', handleEnterLogin);
+        document.getElementById('adminCode').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') { event.preventDefault(); document.getElementById('verifyAdmin').click(); }
+        });
+
         document.getElementById('logoutBtn').addEventListener('click', logout);
         
         document.getElementById('submitLateRequestBtn').addEventListener('click', () => {
@@ -1641,7 +1877,7 @@
         document.getElementById('exportBtn').addEventListener('click', exportToExcel);
         document.getElementById('computePayrollBtn').addEventListener('click', computePayroll);
         document.getElementById('printPayrollBtn').addEventListener('click', () => generatePayslipHTML(payrollResults));
-        document.getElementById('printAllPayslipsBtn').addEventListener('click', printAllPayslips);
+        document.getElementById('downloadPayslipsZipBtn').addEventListener('click', downloadPayslipsAsZip);
         document.getElementById('exportPayslipExcelBtn').addEventListener('click', exportPayrollExcel);
 
         document.getElementById('startDate').valueAsDate = new Date(); 
@@ -1664,6 +1900,31 @@
         loadEmployees();
         loadAttendance();
         setTimeout(()=>{ tryRestoreSession(); }, 800);
+
+
+        // THÊM MỚI: Khởi tạo hiệu ứng nền 3D
+        try {
+            VANTA.FOG({
+                el: "#vanta-bg",
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                highlightColor: 0xc5c5d1,
+                midtoneColor: 0x7a7a99,
+                lowlightColor: 0x2d364d,
+                baseColor: 0xffffff,
+                speed: 1.20
+            })
+        } catch (e) {
+            console.error("Lỗi khởi tạo Vanta.js:", e);
+            document.body.style.backgroundColor = '#e3e5e9'; // Fallback nếu lỗi
+        }
+
+        // SỬA LỖI: Khởi tạo ngôn ngữ sau khi các thành phần khác đã sẵn sàng
+        const savedLang = localStorage.getItem('language') || 'vi';
+        setLanguage(savedLang);
     });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
