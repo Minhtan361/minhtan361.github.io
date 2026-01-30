@@ -19,2208 +19,1731 @@
     <link rel="icon" type="image/png" sizes="256x256" href="https://minhtan361.github.io/logo/favicon-256x256.png">
     <link rel="icon" type="image/png" sizes="384x384" href="https://minhtan361.github.io/logo/favicon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="https://minhtan361.github.io/logo/favicon-512x512.png">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chấm Công Thai Thae - minhtan361</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <link rel="icon" type="image/png" href="favicon.png">
-
+    <title>Quản Lý Mua Hàng - Excel Chuyên Nghiệp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.cells.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
+    <!-- Thư viện ExcelJS để tạo Excel đẹp -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <!-- Thư viện FileSaver để lưu file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-    /* Nâng cấp giao diện hiện đại */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-    :root {
-        --primary-color: #00695c;
-        --secondary-color: #3949ab;
-        --success-color: #43a047;
-        --danger-color: #e53935;
-        --warning-color: #fbc02d;
-        --bg-body: #e3e5e9;
-        --card-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        --radius: 16px;
-    }
-
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: transparent; /* Nền trong suốt để thấy hiệu ứng 3D */
-        color: #333;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-    }
-
-    /* THÊM MỚI: CSS cho nền 3D */
-    #vanta-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1; /* Đặt canvas nằm dưới cùng */
-    }
-
-    /* Navbar */
-    .navbar {
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .navbar-brand {
-        font-weight: 700;
-        font-size: 1.2rem;
-        color: #fff !important;
-    }
-    .navbar-nav .nav-link {
-        color: rgba(255,255,255,0.8);
-    }
-    .navbar-nav .nav-link:hover {
-        color: #fff;
-    }
-    .navbar .btn {
-        border-radius: 50px;
-        font-weight: 600;
-    }
-
-    /* Card */
-    .card {
-        /* NÂNG CẤP: Hiệu ứng thủy tinh mờ (Glassmorphism) */
-        background: rgba(255, 255, 255, 0.85);
-        -webkit-backdrop-filter: blur(12px);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: var(--radius);
-        box-shadow: var(--card-shadow);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    }
-    .card-header {
-        font-weight: 600;
-        border-radius: var(--radius) var(--radius) 0 0 !important;
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    /* Clock */
-    .clock-display {
-        font-size: 3rem;
-        font-weight: 600;
-        color: var(--secondary-color);
-        letter-spacing: -1px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    /* Buttons */
-    .btn {
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 0.6rem 1rem;
-        transition: all 0.2s ease-in-out;
-        border: none;
-    }
-    .btn-primary {
-        background: var(--primary-color);
-    }
-    .btn-primary:hover {
-        background: #004d40;
-        transform: translateY(-2px);
-    }
-    .btn-success { 
-        background: var(--success-color);
-    }
-    .btn-success:hover { 
-        background: #2e7d32;
-        transform: translateY(-2px);
-    }
-    .btn-danger { 
-        background: var(--danger-color);
-    }
-    .btn-danger:hover { 
-        background: #c62828;
-        transform: translateY(-2px);
-    }
-    .btn-outline-secondary:hover {
-        background: #eceff1;
-        transform: translateY(-2px);
-    }
-
-    /* Tables */
-    .table {
-        border-radius: var(--radius);
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.9);
-    }
-    .table thead {
-        background-color: var(--secondary-color);
-        color: #fff;
-        font-weight: 600;
-    }
-    .table td, .table th {
-        padding: 0.9rem 0.75rem;
-        vertical-align: middle;
-    }
-    .table-striped>tbody>tr:nth-of-type(odd)>* {
-        background-color: rgba(255, 255, 255, 0.6);
-    }
-
-    /* Payslip */
-    .payslip {
-        border-radius: var(--radius);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        padding: 25px;
-        background: #fff;
-        border: 1px solid #eee;
-    }
-    .payslip h4, .payslip h5 {
-        color: var(--primary-color);
-        font-weight: 700;
-    }
-    .summary-row {
-        background: #e8f5e9;
-        font-weight: 700;
-    }
-
-    /* Tabs */
-    .nav-tabs .nav-link {
-        border-radius: 8px 8px 0 0;
-        font-weight: 600;
-    }
-    .nav-tabs .nav-link.active {
-        background-color: var(--primary-color);
-        color: #fff;
-    }
-
-    /* Inputs */
-    .form-control, .form-select {
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        background: rgba(255, 255, 255, 0.9);
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: var(--secondary-color);
-        box-shadow: 0 0 0 0.2rem rgba(63,81,181,0.25);
-        background: #fff;
-    }
-
-    /* Modal */
-    .modal-content {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: var(--radius);
-    }
-    .modal-header {
-        border-bottom: 1px solid rgba(0,0,0,0.08);
-    }
-    .modal-footer {
-        background-color: rgba(248, 249, 250, 0.9);
-        border-top: 1px solid rgba(0,0,0,0.08);
-        border-radius: 0 0 var(--radius) var(--radius);
-    }
-
-    /* Custom styles for new features */
-    .attendance-history-panel {
-        display: none;
-    }
-
-    /* Language Switcher */
-    .dropdown-item img {
-        width: 20px;
-        margin-right: 8px;
-    }
-    .dropdown-menu {
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.95);
-    }
-
-    /* Loading indicator */
-    .loading {
-        display: none;
-        text-align: center;
-        padding: 2rem;
-    }
-
-    /* Text colors for better contrast */
-    .text-primary { color: var(--primary-color) !important; }
-    .text-success { color: var(--success-color) !important; }
-    .text-danger { color: var(--danger-color) !important; }
-    .text-warning { color: var(--warning-color) !important; }
-
-    .red-text { color: var(--danger-color) !important; }
-
-    /* Responsive improvements */
-    @media (max-width: 768px) {
-        .clock-display {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+            border-right: 5px solid #3498db;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .app-description {
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1000px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .section-title {
+            color: #3498db;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .section-title i {
+            font-size: 1.3rem;
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Phần chatbot */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 450px;
+        }
+        
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            border: 2px solid #e8e8e8;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 85%;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .bot-message {
+            background: linear-gradient(135deg, #ecf0f1, #d5dbdb);
+            color: #2c3e50;
+            border-bottom-left-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #chat-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+        
+        #chat-input:focus {
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        #send-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        #send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        /* Phần quản lý dữ liệu */
+        .data-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-export:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+        }
+        
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #d35400, #ba4a00);
+        }
+        
+        .btn-statistics {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .btn-statistics:hover {
+            background: linear-gradient(135deg, #8e44ad, #7d3c98);
+        }
+        
+        .data-table-container {
+            overflow-x: auto;
+            max-height: 450px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border-radius: 12px;
+            border: 2px solid #e8e8e8;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 3px solid #2c3e50;
+            position: relative;
+        }
+        
+        th:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            height: 60%;
+            width: 1px;
+            background: rgba(255,255,255,0.3);
+        }
+        
+        td {
+            padding: 14px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        
+        tr {
+            transition: background 0.2s;
+        }
+        
+        tr:hover {
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.05), rgba(52, 152, 219, 0.1));
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:nth-child(even):hover {
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.15));
+        }
+        
+        .amount-cell {
+            font-weight: 600;
+            color: #2ecc71;
+        }
+        
+        .date-cell {
+            font-weight: 500;
+            color: #3498db;
+        }
+        
+        .purpose-cell {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Phần thống kê */
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+            border-top: 4px solid;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.total {
+            border-color: #3498db;
+        }
+        
+        .stat-card.average {
+            border-color: #2ecc71;
+        }
+        
+        .stat-card.max {
+            border-color: #e74c3c;
+        }
+        
+        .stat-card.count {
+            border-color: #9b59b6;
+        }
+        
+        .stat-value {
             font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
         }
-        .card {
-            margin-bottom: 1rem;
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-    }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #3498db);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
+        
+        .excel-options {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .excel-options h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e8e8e8;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option-item:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .option-item.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .month-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .month-filter select {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .month-filter select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.1);
+        }
+        
+        .instructions h3 {
+            color: #ff9800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .instructions strong {
+            color: #e65100;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        
+        .export-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .notification-message {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #95a5a6;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #7f8c8d;
+        }
+        
+        .excel-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px dashed #3498db;
+            display: none;
+        }
+        
+        .excel-preview h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .preview-table th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+        }
+        
+        .preview-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .preview-table tr:last-child td {
+            border-bottom: none;
+        }
     </style>
 </head>
-
 <body>
-    <div id="vanta-bg"></div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-business-time me-2"></i><span data-lang-key="app_title">Chấm Công Thai Thae - minhtan361</span></a>
-            <div class="d-flex align-items-center">
-                <div class="dropdown me-3">
-                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-globe"></i>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Quản Lý Mua Hàng Chuyên Nghiệp</h1>
+            <p class="app-description">
+                Nhập thông tin mua hàng qua chatbot thông minh và xuất báo cáo Excel chuyên nghiệp với định dạng đẹp mắt, 
+                thống kê chi tiết và phân tích dữ liệu nâng cao.
+            </p>
+        </header>
+        
+        <div class="app-grid">
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-robot"></i> Chatbot Nhập Liệu</h2>
+                <div class="chat-container">
+                    <div class="chat-history" id="chat-history">
+                        <div class="message bot-message">
+                            <strong><i class="fas fa-robot"></i> Chatbot:</strong> Xin chào! Tôi có thể giúp bạn ghi nhận các khoản mua hàng.<br><br>
+                            <strong>📝 Định dạng nhập:</strong> <span class="highlight">Ngày SốTiền MụcĐích</span><br>
+                            <strong>✨ Ví dụ:</strong> <span class="highlight">17/1 2345 cồn</span> hoặc <span class="highlight">hôm nay 15000 cà phê</span><br><br>
+                            <strong>📌 Từ khóa đặc biệt:</strong> "hôm nay", "hôm qua" sẽ tự động chuyển thành ngày tương ứng.
+                        </div>
+                    </div>
+                    <div class="input-container">
+                        <input type="text" id="chat-input" placeholder="Nhập: Ngày SốTiền MụcĐích...">
+                        <button id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-database"></i> Quản Lý Dữ Liệu</h2>
+                <div class="data-controls">
+                    <button class="btn btn-export" id="export-btn">
+                        <i class="fas fa-file-excel"></i> Xuất Excel Pro
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                        <li><a class="dropdown-item" href="#" onclick="setLanguage('vi')"><img src="https://cdn-icons-png.flaticon.com/512/555/555515.png" alt="VN"> Tiếng Việt</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="setLanguage('en')"><img src="https://cdn-icons-png.flaticon.com/512/555/555417.png" alt="EN"> English</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="setLanguage('th')"><img src="https://cdn-icons-png.flaticon.com/512/555/555416.png" alt="TH"> ภาษาไทย</a></li>
-                    </ul>
+                    <button class="btn btn-statistics" id="stats-btn">
+                        <i class="fas fa-chart-bar"></i> Thống Kê
+                    </button>
+                    <button class="btn btn-clear" id="clear-btn">
+                        <i class="fas fa-trash-alt"></i> Xóa Dữ Liệu
+                    </button>
                 </div>
-                <button class="btn btn-outline-light" id="adminToggle"><i class="fas fa-user-shield me-1"></i><span data-lang-key="admin_mode">Chế độ Admin</span></button>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-5">
-        <div class="loading" id="loadingIndicator">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Đang tải dữ liệu...</p>
-        </div>
-
-        <div class="row">
-            <div class="col-md-5"> 
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted" data-lang-key="current_time">Thời gian hiện tại</h5>
-                        <div class="clock-display" id="currentTime">00:00:00</div>
-                        <div id="currentDate" class="text-secondary fw-light"></div>
-                    </div>
+                
+                <div class="month-filter">
+                    <label for="month-filter"><i class="fas fa-filter"></i> Lọc theo tháng:</label>
+                    <select id="month-filter">
+                        <option value="all">Tất cả tháng</option>
+                    </select>
+                    <span id="total-amount" style="margin-left: auto; font-weight: 600; color: #2ecc71;"></span>
                 </div>
-
-                <div class="card mb-4">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="fas fa-fingerprint me-2"></i><span data-lang-key="attendance_area">Khu vực Chấm công</span></h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="loginArea">
-                            <h6 class="mb-3 text-secondary" data-lang-key="login_prompt">Đăng nhập để Chấm công</h6>
-                            <div class="row g-3 align-items-end">
-                                <div class="col-12">
-                                    <label class="small" data-lang-key="username">Username</label>
-                                    <input class="form-control" id="loginUsername" data-lang-placeholder="username_placeholder">
-                                </div>
-                                <div class="col-12">
-                                    <label class="small" data-lang-key="password">Mật khẩu</label>
-                                    <input type="password" class="form-control" id="loginPassword" data-lang-placeholder="password_placeholder">
-                                </div>
-                                <div class="col-12 d-flex gap-2">
-                                    <button class="btn btn-primary w-100" id="loginBtn"><span data-lang-key="login">Đăng nhập</span></button>
-                                    <button class="btn btn-outline-secondary w-100" id="loginByIdBtn"><span data-lang-key="login_by_id">Đăng nhập bằng ID</span></button>
-                                </div>
-                            </div>
-                            <div class="mt-3" id="loginMessage"></div>
-                        </div>
-
-                        <div id="clockingArea" class="d-none text-center">
-                            <h4 class="mb-3"><span data-lang-key="hello">Xin chào</span>, <strong id="loggedName" class="text-primary"></strong> (<span id="loggedPosition"></span>)</h4>
-                            <p class="text-danger small"><span data-lang-key="default_shift">Ca làm mặc định</span>: <strong id="loggedShift"></strong></p>
-
-                            <div class="mb-3 text-start">
-                                <label for="shiftSelect" class="form-label small fw-bold"><i class="fas fa-calendar-check me-1"></i><span data-lang-key="step1_shift">1. Chọn ca làm hôm nay:</span></label>
-                                <select class="form-select" id="shiftSelect"></select>
-                            </div>
-                            <div class="mb-3 text-start">
-                                <label for="lateReason" class="form-label small fw-bold"><i class="fas fa-pencil-alt me-1"></i><span data-lang-key="step2_late_reason">2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):</span></label>
-                                <textarea class="form-control" id="lateReason" rows="1" data-lang-placeholder="late_reason_placeholder"></textarea>
-                                <small class="text-muted" data-lang-key="late_reason_note">Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn. <span id="lateNotesRemaining"></span></small>
-                                <button class="btn btn-warning btn-sm w-100 mt-2" id="submitLateRequestBtn"><i class="fas fa-paper-plane me-2"></i><span data-lang-key="send_request">Gửi yêu cầu</span></button> 
-                            </div>
-
-                            <div class="clocking-buttons d-flex gap-3 justify-content-center">
-                                <button class="btn btn-success btn-lg w-50" id="checkInBtn"><i class="fas fa-sign-in-alt me-2"></i><span data-lang-key="check_in">Vào</span></button>
-                                <button class="btn btn-danger btn-lg w-50" id="checkOutBtn"><i class="fas fa-sign-out-alt me-2"></i><span data-lang-key="check_out">Ra</span></button>
-                            </div>
-                            <div class="mt-3">
-                                <button class="btn btn-secondary btn-sm" id="logoutBtn"><span data-lang-key="logout">Thoát phiên</span></button>
-                            </div>
-                            <p class="mt-2 small text-muted" data-lang-key="session_info">Phiên đăng nhập còn hiệu lực 361</p>
-                        </div>
+                
+                <div class="data-table-container">
+                    <table id="purchase-table">
+                        <thead>
+                            <tr>
+                                <th width="15%"><i class="fas fa-calendar"></i> Ngày</th>
+                                <th width="25%"><i class="fas fa-money-bill-wave"></i> Số Tiền</th>
+                                <th width="45%"><i class="fas fa-bullseye"></i> Mục Đích</th>
+                                <th width="15%"><i class="fas fa-cog"></i> Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-database"></i>
+                                    <h3>Chưa có dữ liệu</h3>
+                                    <p>Nhập thông tin qua chatbot để bắt đầu</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="progress-bar" id="export-progress">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                
+                <div class="excel-options" id="excel-options">
+                    <h4><i class="fas fa-cogs"></i> Tùy chọn xuất Excel</h4>
+                    <div class="option-group">
+                        <label class="option-item" id="option-summary">
+                            <input type="checkbox" checked> 
+                            <i class="fas fa-chart-pie"></i> Thêm sheet Tổng hợp
+                        </label>
+                        <label class="option-item" id="option-stats">
+                            <input type="checkbox" checked> 
+                            <i class="fas fa-chart-bar"></i> Thêm sheet Thống kê
+                        </label>
+                        <label class="option-item" id="option-formulas">
+                            <input type="checkbox" checked> 
+                            <i class="fas fa-calculator"></i> Công thức tính toán
+                        </label>
+                        <label class="option-item" id="option-formatting">
+                            <input type="checkbox" checked> 
+                            <i class="fas fa-paint-brush"></i> Định dạng đẹp
+                        </label>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-md-7" id="adminDashboardPanel" style="display:none;">
-                <div class="card">
-                    <div class="card-header text-white" style="background-color: var(--secondary-color) !important;">
-                        <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i><span data-lang-key="admin_dashboard">Bảng Điều Khiển Quản Trị</span></h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="admin-verification-area mb-4" id="adminVerificationArea">
-                            <h6 class="mb-3 text-primary"><i class="fas fa-lock me-2"></i><span data-lang-key="verify_admin_title">Xác minh Admin</span></h6>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="adminCode" data-lang-placeholder="admin_code_placeholder">
-                                <button class="btn btn-primary" id="verifyAdmin"><i class="fas fa-check me-1"></i><span data-lang-key="confirm">Xác nhận</span></button>
-                            </div>
-                        </div>
-
-                        <div class="admin-tabs d-none" id="adminFeatures">
-                            <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-                                <li class="nav-item">
-                                    <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data-content" type="button">
-                                        <i class="fas fa-table me-1"></i><span data-lang-key="tab_data_payroll">1. Dữ liệu & Tính lương</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-content" type="button">
-                                        <i class="fas fa-cogs me-1"></i><span data-lang-key="tab_settings_employee">2. Cài đặt & Nhân viên</span>
-                                    </button>
-                                </li>
-                            </ul>
-                            <div class="tab-content pt-3" id="adminTabsContent">
-                                
-                                <div class="tab-pane fade show active" id="data-content" role="tabpanel">
-                                    <h6 class="text-primary mb-3"><i class="fas fa-filter me-1"></i><span data-lang-key="data_filter">Bộ lọc Dữ liệu</span></h6>
-                                    <div class="row mb-3 g-3 align-items-end">
-                                        <div class="col-md-2">
-                                            <label class="small" data-lang-key="from_date">Từ ngày</label>
-                                            <input type="date" class="form-control" id="startDate">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="small" data-lang-key="to_date">Đến ngày</label>
-                                            <input type="date" class="form-control" id="endDate">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="small" data-lang-key="position">Chức vụ</label>
-                                            <select class="form-select" id="exportPosition">
-                                                <option value="all" data-lang-key="all_positions">Tất cả</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="small" data-lang-key="employee">Nhân viên</label>
-                                            <select class="form-select" id="exportEmployee">
-                                                <option value="all" data-lang-key="all_employees">Tất cả</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button class="btn btn-info w-100" id="applyFilterBtn"><i class="fas fa-filter me-2"></i><span data-lang-key="apply">Áp dụng</span></button>
-                                        </div>
-                                    </div>
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-table me-2"></i><span data-lang-key="attendance_data">Dữ liệu Chấm công</span></h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped table-sm small" id="attendanceTable">
-                                            <thead>
-                                                <tr>
-                                                    <th data-lang-key="col_date">Ngày</th>
-                                                    <th data-lang-key="col_employee">Nhân viên</th>
-                                                    <th data-lang-key="col_shift">Ca</th>
-                                                    <th data-lang-key="col_checkin">Giờ vào</th>
-                                                    <th data-lang-key="col_checkout">Giờ ra</th>
-                                                    <th data-lang-key="col_workhours">Giờ làm</th>
-                                                    <th data-lang-key="col_status">Trạng thái</th>
-                                                    <th data-lang-key="col_notes">Ghi chú/Xin phép</th>
-                                                    <th data-lang-key="col_actions">Hành động</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                    <button class="btn btn-primary btn-sm w-100" id="exportBtn"><i class="fas fa-file-excel me-2"></i><span data-lang-key="export_attendance_excel">Xuất Excel Dữ liệu Chấm công</span></button>
-
-                                    <div class="mt-4 text-center">
-                                        <button class="btn btn-success btn-lg" id="computePayrollBtn"><i class="fas fa-calculator me-2"></i><span data-lang-key="calculate_payroll">TÍNH LƯƠNG</span></button>
-                                        <button class="btn btn-primary btn-lg d-none" id="printPayrollBtn"><i class="fas fa-print me-2"></i><span data-lang-key="print_export_payroll">IN/XUẤT BẢNG LƯƠNG</span></button>
-                                    </div>
-
-                                    <div class="mt-4" id="payrollResultArea" style="display:none">
-                                        <h5 class="text-success"><i class="fas fa-money-check-alt me-2"></i><span data-lang-key="detailed_payroll">Bảng lương chi tiết</span></h5>
-                                        <div id="payrollResult"></div>
-                                    </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="settings-content" role="tabpanel">
-                                    <h5 class="mb-3 text-primary"><i class="fas fa-users-cog me-1"></i><span data-lang-key="employee_management">Quản lý nhân viên</span></h5>
-                                    <p class="text-danger small" data-lang-key="add_employee_note">* Khi tạo nhân viên hệ thống tự tạo username và mật khẩu mặc định: <strong>thaithae</strong></p>
-
-                                    <div class="row mb-3 g-2 align-items-end">
-                                        <div class="col-md-3">
-                                            <label class="small" data-lang-key="employee_name">Tên nhân viên</label>
-                                            <input type="text" class="form-control" id="employeeName" data-lang-placeholder="employee_name_placeholder">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="small" data-lang-key="position">Chức vụ</label>
-                                            <input type="text" class="form-control" id="employeePosition" data-lang-placeholder="position_placeholder">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="small" data-lang-key="base_salary">Lương cơ bản</label>
-                                            <input type="number" class="form-control" id="employeeBaseSalary" data-lang-placeholder="salary_placeholder">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="small" data-lang-key="default_shift">Ca mặc định</label>
-                                            <select class="form-select" id="employeeShift">
-                                                <option value="shift1">Ca 1</option>
-                                                <option value="shift2">Ca 2</option>
-                                                <option value="shift3">Ca 3</option>
-                                                <option value="shift4">Ca 4</option>
-                                                <option value="shift5">Ca 5</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button class="btn btn-success w-100" id="addEmployee"><i class="fas fa-user-plus"></i> <span data-lang-key="add">Thêm</span></button>
-                                        </div>
-                                    </div>
-
-                                    <div class="table-responsive mb-4">
-                                        <table class="table table-striped table-hover small" id="employeesTable">
-                                            <thead class="bg-light">
-                                                <tr>
-                                                    <th data-lang-key="col_id">ID</th>
-                                                    <th data-lang-key="col_name">Tên</th>
-                                                    <th data-lang-key="col_username">Username</th>
-                                                    <th data-lang-key="col_position">Chức vụ</th>
-                                                    <th data-lang-key="col_default_shift">Ca mặc định</th>
-                                                    <th data-lang-key="col_base_salary">Lương cơ bản</th>
-                                                    <th data-lang-key="col_actions">Hành động</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-sliders-h me-1"></i><span data-lang-key="payroll_settings">Cài đặt tính lương</span></h5>
-                                    <div class="row mb-3 g-2">
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="wage_per_hour">Lương theo giờ (VND)</label>
-                                            <input type="number" id="wagePerHour" class="form-control" data-lang-placeholder="wage_per_hour_placeholder">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="default_bonus">Thưởng mặc định (VND)</label>
-                                            <input type="number" id="defaultBonus" class="form-control" data-lang-placeholder="default_bonus_placeholder">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="default_penalty">Phạt chung (VND)</label>
-                                            <input type="number" id="defaultPenalty" class="form-control" data-lang-placeholder="default_penalty_placeholder">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3 g-2">
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="late_penalty">Phạt đi muộn (VND)</label>
-                                            <input type="number" id="latePenalty" class="form-control" data-lang-placeholder="late_penalty_placeholder">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="edit_penalty">Phạt sửa/quên công (VND)</label>
-                                            <input type="number" id="editPenalty" class="form-control" data-lang-placeholder="edit_penalty_placeholder">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small" data-lang-key="forgot_checkout_penalty">Phạt quên chấm ra (VND)</label>
-                                            <input type="number" id="forgotOutPenalty" class="form-control" data-lang-placeholder="forgot_checkout_penalty_placeholder">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3 g-2">
-                                        <div class="col-12">
-                                            <label class="small" data-lang-key="wifi_ip_config">Minhtan config:</label>
-                                            <input type="text" class="form-control" id="wifiIpAddress" data-lang-placeholder="wifi_ip_placeholder">
-                                        </div>
-                                    </div>
-
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-calendar-alt me-1"></i><span data-lang-key="holiday_list">Danh sách ngày lễ (Lương x2)</span></h5>
-                                    <div class="row mb-3 g-2">
-                                        <div class="col-md-8">
-                                            <input type="text" id="holidayList" class="form-control" rows="1" data-lang-placeholder="holiday_list_placeholder">
-                                        </div>
-                                        <div class="col-md-4 d-flex align-items-end">
-                                            <button class="btn btn-primary w-100" id="saveSettings"><span data-lang-key="save_general_settings">Lưu Cài đặt Chung</span></button>
-                                        </div>
-                                    </div>
-                                    <p class="small text-muted" id="currentHolidays"></p>
-
-                                    <h5 class="mt-4 text-primary"><i class="fas fa-tools me-1"></i><span data-lang-key="maintenance_actions">Thao tác bảo trì</span></h5>
-                                    <div class="row mt-3 g-2">
-                                        <div class="col-md-6">
-                                            <button class="btn btn-danger w-100" id="clearDataBtn"><i class="fas fa-trash me-1"></i><span data-lang-key="delete_attendance_data">Xóa dữ liệu chấm công</span></button>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <button class="btn btn-secondary w-100" id="forceLogoutAll"><i class="fas fa-sign-out-alt me-1"></i><span data-lang-key="force_logout_all">Đăng xuất tất cả phiên</span></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-7 attendance-history-panel" id="personalAttendancePanel">
-                <div class="card">
-                    <div class="card-header text-white" style="background-color: var(--secondary-color) !important;">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i><span data-lang-key="your_attendance_history">Lịch sử Chấm công của bạn</span></h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-sm small" id="personalAttendanceTable">
-                                <thead>
-                                    <tr>
-                                        <th data-lang-key="col_date">Ngày</th>
-                                        <th data-lang-key="col_shift">Ca</th>
-                                        <th data-lang-key="col_checkin">Giờ vào</th>
-                                        <th data-lang-key="col_checkout">Giờ ra</th>
-                                        <th data-lang-key="col_workhours">Giờ làm</th>
-                                        <th data-lang-key="col_status">Trạng thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+                
+                <div class="excel-preview" id="excel-preview">
+                    <h4><i class="fas fa-eye"></i> Xem trước Excel</h4>
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Số Tiền</th>
+                                <th>Mục Đích</th>
+                                <th>Tháng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-body">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="modal fade" id="printExportModal" tabindex="-1" aria-labelledby="printExportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="printExportModalLabel" data-lang-key="print_export_payroll">In / Xuất Bảng Lương</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="payslipContainer"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-lang-key="close">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="downloadPayslipsZipBtn"><i class="fas fa-file-archive"></i> <span data-lang-key="download_zip">Tải về ảnh PNG (ZIP)</span></button>
-                    <button type="button" class="btn btn-success" id="exportPayslipExcelBtn"><i class="fas fa-file-excel"></i> <span data-lang-key="export_summary_excel">Xuất Bảng lương Tổng hợp Excel</span></button>
-                </div>
+        
+        <div class="statistics" id="statistics-section" style="display: none;">
+            <div class="stat-card total">
+                <div class="stat-label">Tổng chi tiêu</div>
+                <div class="stat-value" id="stat-total">0đ</div>
+                <i class="fas fa-wallet fa-2x" style="color: #3498db;"></i>
+            </div>
+            <div class="stat-card average">
+                <div class="stat-label">Trung bình/ngày</div>
+                <div class="stat-value" id="stat-average">0đ</div>
+                <i class="fas fa-calculator fa-2x" style="color: #2ecc71;"></i>
+            </div>
+            <div class="stat-card max">
+                <div class="stat-label">Chi cao nhất</div>
+                <div class="stat-value" id="stat-max">0đ</div>
+                <i class="fas fa-arrow-up fa-2x" style="color: #e74c3c;"></i>
+            </div>
+            <div class="stat-card count">
+                <div class="stat-label">Số giao dịch</div>
+                <div class="stat-value" id="stat-count">0</div>
+                <i class="fas fa-receipt fa-2x" style="color: #9b59b6;"></i>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-graduation-cap"></i> Tính năng Excel chuyên nghiệp:</h3>
+            <ul>
+                <li><strong>🎨 Định dạng đẹp mắt:</strong> File Excel có header màu sắc, border rõ ràng, font chữ chuyên nghiệp</li>
+                <li><strong>📊 Đa sheets:</strong> Tự động tạo sheet theo tháng + sheet Tổng hợp + sheet Thống kê</li>
+                <li><strong>🧮 Công thức tự động:</strong> SUM, AVERAGE, COUNT tự động tính toán trên từng sheet</li>
+                <li><strong>📈 Biểu đồ (nếu dữ liệu đủ):</strong> Tự động tạo biểu đồ cột cho chi tiêu theo ngày</li>
+                <li><strong>🎯 Định dạng có điều kiện:</strong> Tô màu ô theo giá trị (cao = đỏ, trung bình = vàng, thấp = xanh)</li>
+                <li><strong>💼 Mẫu chuyên nghiệp:</strong> Có logo, tiêu đề công ty, ngày xuất báo cáo tự động</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p><i class="fas fa-copyright"></i> 2023 - Ứng dụng Quản Lý Mua Hàng Chuyên Nghiệp | Excel Pro Edition</p>
+        </footer>
+        
+        <div class="export-notification" id="export-notification">
+            <i class="fas fa-check-circle fa-2x"></i>
+            <div class="notification-content">
+                <div class="notification-title">Xuất Excel thành công!</div>
+                <div class="notification-message">File đang được tải về...</div>
             </div>
         </div>
     </div>
 
     <script>
-    // TOÀN BỘ CODE JAVASCRIPT GIỮ NGUYÊN NHƯ FILE GỐC
-    const firebaseConfig = {
-      apiKey: "AIzaSyD3LxaZzvFsbtzA4VRYjVWvIOdqgyNYO2o",
-      authDomain: "quan-ly-cham-cong-105da.firebaseapp.com",
-      projectId: "quan-ly-cham-cong-105da",
-      storageBucket: "quan-ly-cham-cong-105da.firebasestorage.app",
-      messagingSenderId: "226837876955",
-      appId: "1:226837876955:web:883453c0b19b25098bbcfe",
-      measurementId: "G-KLZTCZF14B"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Khối ngôn ngữ giữ nguyên
-    const translations = {
-        'vi': {
-            "app_title": "Chấm Công Thai Thae - minhtan361", "admin_mode": "Chế độ Admin", "current_time": "Thời gian hiện tại", "attendance_area": "Khu vực Chấm công",
-            "login_prompt": "Đăng nhập để Chấm công", "username": "Username", "password": "Mật khẩu", "login": "Đăng nhập", "login_by_id": "Đăng nhập bằng ID",
-            "username_placeholder": "ví dụ: quynhanh, phuoclong,...", "password_placeholder": "mật khẩu: thaithae",
-            "hello": "Xin chào", "default_shift": "Ca làm mặc định", "step1_shift": "1. Chọn ca làm hôm nay:", "step2_late_reason": "2. Xin phép đi muộn (Ghi trước khi chấm công vào và giới hạn 2 lần/tuần):",
-            "late_reason_placeholder": "Em xin đi muộn 30p do bận việc...", "late_reason_note": "Ghi chú này sẽ loại bỏ phạt đi trễ 10.000 VND nếu bạn chấm công muộn.",
-            "send_request": "Gửi yêu cầu", "check_in": "Vào", "check_out": "Ra", "logout": "Thoát phiên", "session_info": "Phiên đăng nhập còn hiệu lực 361",
-            "admin_dashboard": "Bảng Điều Khiển Quản Trị", "verify_admin_title": "Xác minh Admin", "admin_code_placeholder": "Nhập mã khóa admin", "confirm": "Xác nhận",
-            "tab_data_payroll": "1. Dữ liệu & Tính lương", "tab_settings_employee": "2. Cài đặt & Nhân viên", "data_filter": "Bộ lọc Dữ liệu",
-            "from_date": "Từ ngày", "to_date": "Đến ngày", "position": "Chức vụ", "employee": "Nhân viên", "all_positions": "Tất cả chức vụ", "all_employees": "Tất cả nhân viên",
-            "apply": "Áp dụng", "attendance_data": "Dữ liệu Chấm công", "col_date": "Ngày", "col_employee": "Nhân viên", "col_shift": "Ca", "col_checkin": "Giờ vào", "col_checkout": "Giờ ra", "col_workhours": "Giờ làm", "col_status": "Trạng thái", "col_notes": "Ghi chú/Xin phép", "col_actions": "Hành động",
-            "export_attendance_excel": "Xuất Excel Dữ liệu Chấm công", "calculate_payroll": "TÍNH LƯƠNG", "print_export_payroll": "IN/XUẤT BẢNG LƯƠNG", "detailed_payroll": "Bảng lương chi tiết",
-            "employee_management": "Quản lý nhân viên", "add_employee_note": "* Khi tạo nhân viên hệ thống tự tạo username và mật khẩu mặc định: thaithae",
-            "employee_name": "Tên nhân viên", "employee_name_placeholder": "Tên nhân viên", "position_placeholder": "Chức vụ", "base_salary": "Lương cơ bản", "salary_placeholder": "Lương (VND)",
-            "default_shift": "Ca mặc định", "add": "Thêm", "col_id": "ID", "col_name": "Tên", "col_username": "Username", "col_position": "Chức vụ", "col_default_shift": "Ca mặc định", "col_base_salary": "Lương cơ bản",
-            "payroll_settings": "Cài đặt tính lương", "wage_per_hour": "Lương theo giờ (VND)", "wage_per_hour_placeholder": "Lương theo giờ (VND)", "default_bonus": "Thưởng mặc định (VND)", "default_bonus_placeholder": "Thưởng mặc định (VND)",
-            "default_penalty": "Phạt chung (VND)", "default_penalty_placeholder": "Phạt chung (VND)", "late_penalty": "Phạt đi muộn (VND)", "late_penalty_placeholder": "Phạt 10000",
-            "edit_penalty": "Phạt sửa/quên công (VND)", "edit_penalty_placeholder": "Phạt 20000", "forgot_checkout_penalty": "Phạt quên chấm ra (VND)", "forgot_checkout_penalty_placeholder": "Phạt 20000",
-            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "Nhập địa chỉ IP công cộng của quán (ví dụ: 103.111.200.222)",
-            "holiday_list": "Danh sách ngày lễ (Lương x2)", "holiday_list_placeholder": "YYYY-MM-DD, cách nhau bằng dấu phẩy hoặc xuống dòng", "save_general_settings": "Lưu Cài đặt Chung",
-            "maintenance_actions": "Thao tác bảo trì", "delete_attendance_data": "Xóa dữ liệu chấm công", "force_logout_all": "Đăng xuất tất cả phiên",
-            "your_attendance_history": "Lịch sử Chấm công của bạn", "close": "Đóng", "download_zip": "Tải về ảnh PNG (ZIP)", "export_summary_excel": "Xuất Bảng lương Tổng hợp Excel",
-            "save": "Lưu", "cancel": "Hủy", "edit": "Sửa", "delete": "Xóa"
-        },
-        'en': {
-            "app_title": "Attendance - Thai Thae - minhtan361", "admin_mode": "Admin Mode", "current_time": "Current Time", "attendance_area": "Attendance Area",
-            "login_prompt": "Login to Clock-in", "username": "Username", "password": "Password", "login": "Login", "login_by_id": "Login by ID",
-            "username_placeholder": "e.g., quynhanh, phuoclong,...", "password_placeholder": "password: thaithae",
-            "hello": "Hello", "default_shift": "Default Shift", "step1_shift": "1. Select today's shift:", "step2_late_reason": "2. Request for being late (Write before clock-in, limit 2/week):",
-            "late_reason_placeholder": "I'll be 30 mins late due to...", "late_reason_note": "This note will waive the 10,000 VND late penalty if you clock in late.",
-            "send_request": "Send Request", "check_in": "Check-in", "check_out": "Check-out", "logout": "Logout", "session_info": "Session is valid for 361",
-            "admin_dashboard": "Admin Dashboard", "verify_admin_title": "Admin Verification", "admin_code_placeholder": "Enter admin key", "confirm": "Confirm",
-            "tab_data_payroll": "1. Data & Payroll", "tab_settings_employee": "2. Settings & Employees", "data_filter": "Data Filter",
-            "from_date": "From date", "to_date": "To date", "position": "Position", "employee": "Employee", "all_positions": "All Positions", "all_employees": "All Employees",
-            "apply": "Apply", "attendance_data": "Attendance Data", "col_date": "Date", "col_employee": "Employee", "col_shift": "Shift", "col_checkin": "Check-in", "col_checkout": "Check-out", "col_workhours": "Work Hours", "col_status": "Status", "col_notes": "Notes/Request", "col_actions": "Actions",
-            "export_attendance_excel": "Export Attendance Data to Excel", "calculate_payroll": "CALCULATE PAYROLL", "print_export_payroll": "PRINT/EXPORT PAYROLL", "detailed_payroll": "Detailed Payroll",
-            "employee_management": "Employee Management", "add_employee_note": "* When creating an employee, the system auto-creates a username and default password: thaithae",
-            "employee_name": "Employee Name", "employee_name_placeholder": "Employee Name", "position_placeholder": "Position", "base_salary": "Base Salary", "salary_placeholder": "Salary (VND)",
-            "default_shift": "Default Shift", "add": "Add", "col_id": "ID", "col_name": "Name", "col_username": "Username", "col_position": "Position", "col_default_shift": "Default Shift", "col_base_salary": "Base Salary",
-            "payroll_settings": "Payroll Settings", "wage_per_hour": "Wage per hour (VND)", "wage_per_hour_placeholder": "Wage per hour (VND)", "default_bonus": "Default Bonus (VND)", "default_bonus_placeholder": "Default Bonus (VND)",
-            "default_penalty": "General Penalty (VND)", "default_penalty_placeholder": "General Penalty (VND)", "late_penalty": "Late Penalty (VND)", "late_penalty_placeholder": "Penalty 10000",
-            "edit_penalty": "Edit/Forgot Penalty (VND)", "edit_penalty_placeholder": "Penalty 20000", "forgot_checkout_penalty": "Forgot Check-out Penalty (VND)", "forgot_checkout_penalty_placeholder": "Penalty 20000",
-            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "Enter public IP address of the store (e.g., 103.111.200.222)",
-            "holiday_list": "Holiday List (x2 Salary)", "holiday_list_placeholder": "YYYY-MM-DD, separated by comma or new line", "save_general_settings": "Save General Settings",
-            "maintenance_actions": "Maintenance Actions", "delete_attendance_data": "Delete Attendance Data", "force_logout_all": "Force Logout All Sessions",
-            "your_attendance_history": "Your Attendance History", "close": "Close", "download_zip": "Download as PNG (ZIP)", "export_summary_excel": "Export Payroll Summary to Excel",
-            "save": "Save", "cancel": "Cancel", "edit": "Edit", "delete": "Delete"
-        },
-        'th': {
-            "app_title": "เช็คชื่อ - Thai Thae - minhtan361", "admin_mode": "โหมดผู้ดูแล", "current_time": "เวลาปัจจุบัน", "attendance_area": "พื้นที่เช็คชื่อ",
-            "login_prompt": "เข้าสู่ระบบเพื่อลงเวลา", "username": "ชื่อผู้ใช้", "password": "รหัสผ่าน", "login": "เข้าสู่ระบบ", "login_by_id": "เข้าสู่ระบบด้วย ID",
-            "username_placeholder": "เช่น quynhanh, phuoclong,...", "password_placeholder": "รหัสผ่าน: thaithae",
-            "hello": "สวัสดี", "default_shift": "กะเริ่มต้น", "step1_shift": "1. เลือกกะทำงานวันนี้:", "step2_late_reason": "2. ขออนุญาตมาสาย (เขียนก่อนลงเวลาเข้า, จำกัด 2 ครั้ง/สัปดาห์):",
-            "late_reason_placeholder": "ฉันจะมาสาย 30 นาทีเพราะ...", "late_reason_note": "บันทึกนี้จะยกเว้นค่าปรับ 10,000 VND หากคุณมาสาย",
-            "send_request": "ส่งคำขอ", "check_in": "เข้างาน", "check_out": "ออกงาน", "logout": "ออกจากระบบ", "session_info": "เซสชันใช้งานได้ 361",
-            "admin_dashboard": "แดชบอร์ดผู้ดูแล", "verify_admin_title": "ยืนยันตัวตนผู้ดูแล", "admin_code_placeholder": "ป้อนรหัสผู้ดูแล", "confirm": "ยืนยัน",
-            "tab_data_payroll": "1. ข้อมูลและบัญชีเงินเดือน", "tab_settings_employee": "2. ตั้งค่าและพนักงาน", "data_filter": "ตัวกรองข้อมูล",
-            "from_date": "จากวันที่", "to_date": "ถึงวันที่", "position": "ตำแหน่ง", "employee": "พนักงาน", "all_positions": "ทุกตำแหน่ง", "all_employees": "พนักงานทั้งหมด",
-            "apply": "ใช้", "attendance_data": "ข้อมูลการลงเวลา", "col_date": "วันที่", "col_employee": "พนักงาน", "col_shift": "กะ", "col_checkin": "เวลาเข้า", "col_checkout": "เวลาออก", "col_workhours": "ชั่วโมงทำงาน", "col_status": "สถานะ", "col_notes": "หมายเหตุ/คำขอ", "col_actions": "การกระทำ",
-            "export_attendance_excel": "ส่งออกข้อมูลการลงเวลาเป็น Excel", "calculate_payroll": "คำนวณเงินเดือน", "print_export_payroll": "พิมพ์/ส่งออกสลิปเงินเดือน", "detailed_payroll": "รายละเอียดเงินเดือน",
-            "employee_management": "การจัดการพนักงาน", "add_employee_note": "* เมื่อสร้างพนักงาน ระบบจะสร้างชื่อผู้ใช้และรหัสผ่านเริ่มต้น: thaithae",
-            "employee_name": "ชื่อพนักงาน", "employee_name_placeholder": "ชื่อพนักงาน", "position_placeholder": "ตำแหน่ง", "base_salary": "เงินเดือนพื้นฐาน", "salary_placeholder": "เงินเดือน (VND)",
-            "default_shift": "กะเริ่มต้น", "add": "เพิ่ม", "col_id": "ID", "col_name": "ชื่อ", "col_username": "ชื่อผู้ใช้", "col_position": "ตำแหน่ง", "col_default_shift": "กะเริ่มต้น", "col_base_salary": "เงินเดือนพื้นฐาน",
-            "payroll_settings": "การตั้งค่าบัญชีเงินเดือน", "wage_per_hour": "ค่าจ้างต่อชั่วโมง (VND)", "wage_per_hour_placeholder": "ค่าจ้างต่อชั่วโมง (VND)", "default_bonus": "โบนัสเริ่มต้น (VND)", "default_bonus_placeholder": "โบนัสเริ่มต้น (VND)",
-            "default_penalty": "ค่าปรับทั่วไป (VND)", "default_penalty_placeholder": "ค่าปรับทั่วไป (VND)", "late_penalty": "ค่าปรับมาสาย (VND)", "late_penalty_placeholder": "ค่าปรับ 10000",
-            "edit_penalty": "ค่าปรับแก้ไข/ลืม (VND)", "edit_penalty_placeholder": "ค่าปรับ 20000", "forgot_checkout_penalty": "ค่าปรับลืมลงเวลาออก (VND)", "forgot_checkout_penalty_placeholder": "ค่าปรับ 20000",
-            "wifi_ip_config": "Minhtan config:", "wifi_ip_placeholder": "ป้อนที่อยู่ IP สาธารณะของร้าน (เช่น 103.111.200.222)",
-            "holiday_list": "รายการวันหยุด (เงินเดือน x2)", "holiday_list_placeholder": "YYYY-MM-DD คั่นด้วยจุลภาคหรือขึ้นบรรทัดใหม่", "save_general_settings": "บันทึกการตั้งค่าทั่วไป",
-            "maintenance_actions": "การบำรุงรักษา", "delete_attendance_data": "ลบข้อมูลการลงเวลา", "force_logout_all": "บังคับออกจากระบบทุกเซสชัน",
-            "your_attendance_history": "ประวัติการลงเวลาของคุณ", "close": "ปิด", "download_zip": "ดาวน์โหลดเป็น PNG (ZIP)", "export_summary_excel": "ส่งออกสรุปเงินเดือนเป็น Excel",
-            "save": "บันทึก", "cancel": "ยกเลิก", "edit": "แก้ไข", "delete": "ลบ"
-        }
-    };
-
-    function setLanguage(lang) {
-        localStorage.setItem('language', lang);
-        const langData = translations[lang];
-        if (!langData) return;
-
-        document.querySelectorAll('[data-lang-key]').forEach(el => {
-            const key = el.getAttribute('data-lang-key');
-            if (langData[key]) {
-                el.textContent = langData[key];
-            }
-        });
-
-        document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
-            const key = el.getAttribute('data-lang-placeholder');
-            if (langData[key]) {
-                el.placeholder = langData[key];
-            }
-        });
-    }
-
-    // App state - giữ nguyên
-    let employees = [];
-    let attendance = [];
-    let isAdmin = false;
-    let payrollResults = {}; 
-    let isEditingAttendance = {};
-    let isEditingEmployee = {};
-    let loggedInUser = null; 
-    
-    // UPDATED SETTINGS - giữ nguyên
-    let settings = { wagePerHour: 0, defaultBonus:0, defaultPenalty:0, latePenalty:10000, editPenalty:20000, forgotOutPenalty:20000, holidays: [], wifiIpAddress: '' };
-    
-    // QUY TẮC GRACE PERIOD 5 PHÚT (Nghiêm ngặt) - giữ nguyên
-    const GRACE_PERIOD_MS = 5 * 60 * 1000;
-    const LATE_NOTE_LIMIT = 2;
-
-    // Shift definitions - giữ nguyên
-    const shifts = {
-        shift1: { name: 'Ca 1', start: '10:30:00', end: '16:30:00', minutes: 360 },
-        shift2: { name: 'Ca 2', start: '09:00:00', end: '17:00:00', minutes: 480 },
-        shift3: { name: 'Ca 3', start: '17:00:00', end: '23:00:00', minutes: 360 },
-        shift4: { name: 'Ca 4', start: '09:00:00', end: '23:00:00', minutes: 840 },
-        shift5: { name: 'Ca 5', start: '10:30:00', end: '23:00:00', minutes: 750 }
-    };
-
-    // DOM elements - giữ nguyên
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const employeesTable = document.getElementById('employeesTable').querySelector('tbody');
-    const exportEmployee = document.getElementById('exportEmployee');
-    const exportPosition = document.getElementById('exportPosition'); 
-    const adminDashboardPanel = document.getElementById('adminDashboardPanel'); 
-    const adminVerificationArea = document.getElementById('adminVerificationArea');
-    const adminFeatures = document.getElementById('adminFeatures');
-    const attendanceTableBody = document.getElementById('attendanceTable').querySelector('tbody');
-    const payrollResultArea = document.getElementById('payrollResultArea');
-    const payrollResult = document.getElementById('payrollResult');
-    const printPayrollBtn = document.getElementById('printPayrollBtn');
-    const computePayrollBtn = document.getElementById('computePayrollBtn');
-    const payslipContainer = document.getElementById('payslipContainer');
-    const shiftSelect = document.getElementById('shiftSelect'); 
-    const personalAttendancePanel = document.getElementById('personalAttendancePanel');
-    const personalAttendanceTableBody = document.getElementById('personalAttendanceTable').querySelector('tbody');
-    const lateReasonInput = document.getElementById('lateReason');
-    const lateNotesRemainingSpan = document.getElementById('lateNotesRemaining');
-
-    // Session handling - giữ nguyên
-    const SESSION_KEY = 'thai_thae_session';
-    const SESSION_DURATION_MS = 4 * 24 * 60 * 60 * 1000;
-
-    // Utility functions - giữ nguyên
-    function showLoading(){ loadingIndicator.style.display='block' }
-    function hideLoading(){ loadingIndicator.style.display='none' }
-    function formatVND(amount){ return Number(amount).toLocaleString('vi-VN') + ' VND'; }
-    function updateClock(){ const now = new Date(); document.getElementById('currentTime').textContent = now.toLocaleTimeString('vi-VN'); document.getElementById('currentDate').textContent = now.toLocaleDateString('vi-VN', {weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
-    setInterval(updateClock,1000); updateClock();
-
-    function toUsername(name){
-        if(!name) return '';
-        let s = name.trim().toLowerCase();
-        s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        s = s.replace(/[^a-z0-9]/g,'');
-        return s;
-    }
-
-    // --- TẤT CẢ CÁC HÀM CHỨC NĂNG CHÍNH GIỮ NGUYÊN ---
-    async function getPublicIpAddress() {
-        try {
-            const response = await fetch('https://api.ipify.org?format=json');
-            if (!response.ok) {
-                throw new Error('Không thể lấy địa chỉ IP.');
-            }
-            const data = await response.json();
-            return data.ip;
-        } catch (error) {
-            console.error("Lỗi lấy IP:", error);
-            return null;
-        }
-    }
-
-    async function isConnectedToAuthorizedWifi() {
-        const publicIp = await getPublicIpAddress();
-        if (!publicIp) {
-            alert('Không ở quán ai cho chấm công hả. Kết nối wifi của quán đi.');
-            return false;
-        }
-
-        const authorizedIps = settings.wifiIpAddress.split(',').map(ip => ip.trim());
-
-        if (authorizedIps.includes(publicIp)) {
-            return true;
-        } else {
-            alert(`Tới quán mới chấm công được !!! IP hiện tại : ${publicIp}`);
-            return false;
-        }
-    }
-
-    let unsubscribePersonalAttendance = null;
-    function loadPersonalAttendance(employeeId) {
-        if (unsubscribePersonalAttendance) unsubscribePersonalAttendance();
-        unsubscribePersonalAttendance = db.collection('attendance')
-            .where('employeeId', '==', employeeId)
-            .orderBy('date', 'desc')
-            .onSnapshot(snap => {
-                const history = [];
-                snap.forEach(doc => history.push({id: doc.id, ...doc.data()}));
-                populatePersonalAttendanceUI(history);
-            });
-    }
-
-    function populatePersonalAttendanceUI(history) {
-        personalAttendanceTableBody.innerHTML = '';
-        if (history.length === 0) {
-            personalAttendanceTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Bạn chưa có lịch sử chấm công nào.</td></tr>';
-            return;
-        }
-
-        history.forEach(r => {
-            const emp = employees.find(x => x.id === r.employeeId) || {};
-            const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-            const empShift = shifts[finalShiftKey];
-
-            let checkIn = r.checkIn || '---';
-            let finalCheckOut = r.checkOut || '---';
-            let hoursText = '0 giờ 0 phút';
-            let status = '';
-
-            if (r.checkIn) {
-                let inDT = new Date(`${r.date}T${r.checkIn}`);
-                let outDT = null;
-                if (!r.checkOut) {
-                    outDT = new Date(`${r.date}T23:00:00`);
-                } else {
-                    outDT = new Date(`${r.date}T${r.checkOut}`);
-                }
-                if (outDT <= inDT) outDT.setDate(outDT.getDate() + 1);
-                const diff = Math.max(0, outDT - inDT);
-                const hrs = Math.floor(diff / 3600000);
-                const mins = Math.round((diff % 3600000) / 60000);
-                hoursText = `${hrs} giờ ${mins} phút`;
-
-                const shiftStart = new Date(`${r.date}T${empShift.start}`);
-                const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
+        // Khởi tạo các biến và dữ liệu
+        let purchaseData = [];
+        let currentUser = null;
+        
+        // DOM Elements
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const tableBody = document.getElementById('table-body');
+        const exportBtn = document.getElementById('export-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const statsBtn = document.getElementById('stats-btn');
+        const monthFilter = document.getElementById('month-filter');
+        const exportProgress = document.getElementById('export-progress');
+        const progressFill = document.getElementById('progress-fill');
+        const totalAmountEl = document.getElementById('total-amount');
+        const statisticsSection = document.getElementById('statistics-section');
+        const excelPreview = document.getElementById('excel-preview');
+        const previewBody = document.getElementById('preview-body');
+        const exportNotification = document.getElementById('export-notification');
+        
+        // Các option Excel
+        const optionSummary = document.getElementById('option-summary');
+        const optionStats = document.getElementById('option-stats');
+        const optionFormulas = document.getElementById('option-formulas');
+        const optionFormatting = document.getElementById('option-formatting');
+        
+        // Tải dữ liệu từ Local Storage khi khởi động
+        document.addEventListener('DOMContentLoaded', function() {
+            currentUser = getUserId();
+            loadDataFromStorage();
+            renderPurchaseTable();
+            populateMonthFilter();
+            updateTotalAmount();
+            updateExcelPreview();
+            
+            // Thêm hiệu ứng cho các option
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox') {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        checkbox.checked = !checkbox.checked;
+                        this.classList.toggle('active', checkbox.checked);
+                    }
+                });
                 
-                if (r.edited) {
-                    status = 'Sửa công';
-                } else if (!r.checkOut) {
-                    status = 'Quên chấm ra';
-                    finalCheckOut = '23:00:00 (Hệ thống)';
-                } else if (r.lateReason) {
-                    status = 'Đi muộn (Xin phép)';
-                } else if (isAfterGracePeriod) {
-                    status = 'Đi muộn (Bị phạt)';
-                } else {
-                    status = 'Đúng giờ';
+                // Cập nhật trạng thái active ban đầu
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                item.classList.toggle('active', checkbox.checked);
+            });
+        });
+        
+        // Xử lý sự kiện nhấn nút gửi trong chatbot
+        sendBtn.addEventListener('click', processChatInput);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processChatInput();
+            }
+        });
+        
+        // Xử lý sự kiện xuất file Excel Pro
+        exportBtn.addEventListener('click', exportToExcelPro);
+        
+        // Xử lý sự kiện xóa dữ liệu
+        clearBtn.addEventListener('click', clearAllData);
+        
+        // Xử lý sự kiện hiển thị thống kê
+        statsBtn.addEventListener('click', toggleStatistics);
+        
+        // Xử lý sự kiện lọc theo tháng
+        monthFilter.addEventListener('change', function() {
+            renderPurchaseTable();
+            updateTotalAmount();
+            updateStatistics();
+        });
+        
+        // Hàm xử lý đầu vào từ chatbot
+        function processChatInput() {
+            const inputText = chatInput.value.trim();
+            if (!inputText) return;
+            
+            // Hiển thị tin nhắn của người dùng
+            addMessageToChat("Bạn", inputText, "user");
+            
+            // Xử lý và phân tích đầu vào
+            const result = parsePurchaseInput(inputText);
+            
+            if (result.success) {
+                // Thêm dữ liệu vào mảng
+                const newPurchase = {
+                    id: Date.now(),
+                    date: result.date,
+                    amount: result.amount,
+                    purpose: result.purpose,
+                    originalAmount: result.originalAmount,
+                    month: getMonthFromDate(result.date),
+                    year: new Date().getFullYear(),
+                    userId: currentUser,
+                    timestamp: new Date().toISOString()
+                };
+                
+                purchaseData.push(newPurchase);
+                
+                // Sắp xếp dữ liệu theo ngày tăng dần
+                sortPurchaseData();
+                
+                // Lưu dữ liệu
+                saveDataToStorage();
+                
+                // Cập nhật giao diện
+                renderPurchaseTable();
+                populateMonthFilter();
+                updateTotalAmount();
+                updateStatistics();
+                updateExcelPreview();
+                
+                // Hiển thị preview Excel nếu có dữ liệu
+                if (purchaseData.length > 0) {
+                    excelPreview.style.display = 'block';
                 }
+                
+                // Phản hồi của chatbot
+                const response = `✅ Đã ghi nhận thành công!<br>
+                                📅 <strong>Ngày:</strong> ${result.date}<br>
+                                💰 <strong>Số tiền:</strong> ${formatCurrency(result.amount)}<br>
+                                🎯 <strong>Mục đích:</strong> ${result.purpose}`;
+                addMessageToChat("Chatbot", response, "bot");
             } else {
-                status = 'Vắng mặt';
+                // Phản hồi lỗi
+                addMessageToChat("Chatbot", result.message, "bot");
             }
-
-            const isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
-            if (isHoliday) status += ' / Ngày lễ';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
-                            <td>${empShift?.name||'N/A'}</td>
-                            <td>${checkIn}</td>
-                            <td>${finalCheckOut}</td>
-                            <td>${hoursText}</td>
-                            <td>${status}</td>`;
-            personalAttendanceTableBody.appendChild(tr);
-        });
-    }
-
-    async function checkWeeklyLateNotes(employeeId) {
-        const today = new Date();
-        const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
-        firstDayOfWeek.setHours(0, 0, 0, 0);
-        
-        const q = await db.collection('attendance')
-                          .where('employeeId', '==', employeeId)
-                          .where('timestamp', '>=', firstDayOfWeek)
-                          .get();
-        
-        let lateNotesUsed = 0;
-        q.forEach(doc => {
-            if (doc.data().lateReason) {
-                lateNotesUsed++;
-            }
-        });
-        
-        const remaining = Math.max(0, LATE_NOTE_LIMIT - lateNotesUsed);
-        
-        if (remaining > 0) {
-            lateReasonInput.disabled = false;
-            lateNotesRemainingSpan.textContent = `(Còn lại: ${remaining} lượt)`;
-        } else {
-            lateReasonInput.disabled = true;
-            lateReasonInput.value = '';
-            lateNotesRemainingSpan.textContent = '(Đã hết lượt xin phép trong tuần)';
+            
+            // Xóa nội dung input
+            chatInput.value = '';
+            chatInput.focus();
         }
-    }
-    
-    // Load employees + attendance from Firestore - giữ nguyên
-    let unsubscribeEmployees=null, unsubscribeAttendance=null;
-    function loadEmployees(){ showLoading(); if(unsubscribeEmployees) unsubscribeEmployees(); unsubscribeEmployees = db.collection('employees').onSnapshot(snap=>{ employees=[]; snap.forEach(doc=> employees.push({id:doc.id, ...doc.data()})); populateEmployeesUI(); hideLoading(); tryRestoreSession(); },err=>{ console.error(err); hideLoading(); alert('Lỗi tải nhân viên'); }); }
-    function loadAttendance(){ showLoading(); if(unsubscribeAttendance) unsubscribeAttendance(); unsubscribeAttendance = db.collection('attendance').orderBy('date','desc').onSnapshot(snap=>{ attendance=[]; snap.forEach(doc=> attendance.push({id:doc.id, ...doc.data()})); populateAttendanceTable(); hideLoading(); },err=>{ console.error(err); hideLoading(); alert('Lỗi tải chấm công'); }); }
-
-    // Populate Employees UI - giữ nguyên
-    function populateEmployeesUI(){
-        employeesTable.innerHTML='';
-        exportEmployee.innerHTML='';
-        exportPosition.innerHTML=''; 
         
-        let allEmpOpt = document.createElement('option'); allEmpOpt.value='all'; allEmpOpt.textContent='Tất cả nhân viên'; exportEmployee.appendChild(allEmpOpt);
-        
-        let allPosOpt = document.createElement('option'); allPosOpt.value='all'; allPosOpt.textContent='Tất cả chức vụ'; exportPosition.appendChild(allPosOpt);
-        const uniquePositions = new Set();
-        
-        employees.forEach(e=>{
-            const isEditing = isEditingEmployee[e.id];
-            const shiftName = shifts[e.shift]?.name || e.shift || '';
-            const tr = document.createElement('tr');
-            tr.id = `emp-row-${e.id}`;
-
-            const shiftOptions = Object.keys(shifts).map(key => 
-                `<option value="${key}" ${e.shift === key ? 'selected' : ''}>${shifts[key].name}</option>`
-            ).join('');
-            
-            if (isEditing) {
-                 tr.innerHTML = `
-                    <td>${e.id}</td>
-                    <td><input type="text" class="form-control form-control-sm" id="edit-name-${e.id}" value="${e.name}"></td>
-                    <td>${e.username||''}</td>
-                    <td><input type="text" class="form-control form-control-sm" id="edit-position-${e.id}" value="${e.position||''}"></td>
-                    <td>
-                        <select class="form-select form-select-sm" id="edit-shift-${e.id}">
-                            ${shiftOptions}
-                        </select>
-                    </td>
-                    <td><input type="number" class="form-control form-control-sm" id="edit-salary-${e.id}" value="${e.baseSalary||0}"></td>
-                    <td class="d-flex gap-1">
-                        <button class="btn btn-sm btn-success btn-save" data-id="${e.id}"><i class="fas fa-save"></i> Lưu</button>
-                        <button class="btn btn-sm btn-secondary btn-cancel" data-id="${e.id}"><i class="fas fa-times"></i> Hủy</button>
-                    </td>`;
-            } else {
-                 tr.innerHTML = `
-                    <td>${e.id}</td>
-                    <td>${e.name}</td>
-                    <td>${e.username||''}</td>
-                    <td>${e.position||''}</td>
-                    <td>${shiftName}</td>
-                    <td>${formatVND(e.baseSalary||0)}</td>
-                    <td class="d-flex gap-1">
-                        <button class="btn btn-sm btn-info btn-edit" data-id="${e.id}"><i class="fas fa-edit"></i> Sửa</button>
-                        <button class="btn btn-sm btn-danger btn-delete" data-id="${e.id}"><i class="fas fa-trash"></i> Xóa</button>
-                    </td>`;
-            }
-
-            employeesTable.appendChild(tr);
-
-            const opt = document.createElement('option'); opt.value = e.id; opt.textContent = e.name; exportEmployee.appendChild(opt);
-            
-            if (e.position && e.position.trim()) {
-                uniquePositions.add(e.position.trim());
-            }
-        });
-        
-        uniquePositions.forEach(pos => {
-            const opt = document.createElement('option');
-            opt.value = pos;
-            opt.textContent = pos;
-            exportPosition.appendChild(opt);
-        });
-
-        document.querySelectorAll('.btn-delete').forEach(btn=> btn.addEventListener('click', deleteEmployee));
-        document.querySelectorAll('.btn-edit').forEach(btn=> btn.addEventListener('click', editEmployee));
-        document.querySelectorAll('.btn-save').forEach(btn=> btn.addEventListener('click', saveEmployee));
-        document.querySelectorAll('.btn-cancel').forEach(btn=> btn.addEventListener('click', cancelEdit));
-    }
-    
-    // Logic chỉnh sửa nhân viên - giữ nguyên
-    function deleteEmployee(event){
-        if(!isAdmin){alert('Bạn cần quyền admin');return;} 
-        const id=event.currentTarget.getAttribute('data-id'); 
-        if(confirm('Xóa nhân viên? Hành động này không thể hoàn tác.')) db.collection('employees').doc(id).delete();
-    }
-
-    function editEmployee(event){
-        if(!isAdmin){alert('Bạn cần quyền admin');return;} 
-        const id=event.currentTarget.getAttribute('data-id');
-        isEditingEmployee = {}; 
-        isEditingEmployee[id] = true; 
-        populateEmployeesUI();
-    }
-
-    function cancelEdit(event){
-        const id=event.currentTarget.getAttribute('data-id');
-        delete isEditingEmployee[id];
-        populateEmployeesUI();
-    }
-
-    function saveEmployee(event){
-        if(!isAdmin){alert('Bạn cần quyền admin');return;} 
-        const id=event.currentTarget.getAttribute('data-id');
-        const name = document.getElementById(`edit-name-${id}`).value.trim();
-        const position = document.getElementById(`edit-position-${id}`).value.trim();
-        const shift = document.getElementById(`edit-shift-${id}`).value;
-        const baseSalary = Number(document.getElementById(`edit-salary-${id}`).value) || 0;
-
-        if (!name) { alert('Tên không được để trống!'); return; }
-        
-        showLoading();
-        db.collection('employees').doc(id).update({
-            name: name,
-            position: position,
-            shift: shift,
-            baseSalary: baseSalary,
-        })
-        .then(() => {
-            delete isEditingEmployee[id];
-            alert(`Đã cập nhật thông tin nhân viên ${name}.`);
-            hideLoading();
-        })
-        .catch(err => {
-            console.error(err);
-            hideLoading();
-            alert('Lỗi cập nhật nhân viên');
-        });
-    }
-
-    // Populate Attendance Table - giữ nguyên
-    function populateAttendanceTable(){
-        attendanceTableBody.innerHTML='';
-        const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0);
-        const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59);
-        const selectedEmployeeId = exportEmployee.value||'all';
-        const selectedPosition = exportPosition.value||'all';
-        
-        const filtered = attendance.filter(r=>{ 
-            const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {};
-            
-            const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition;
-            
-            return d>=start && d<=end && matchEmp && matchPos;
-        });
-        
-        if (filtered.length === 0) {
-            attendanceTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Không tìm thấy dữ liệu chấm công nào trong kỳ này.</td></tr>';
-            return;
+        // Hàm sắp xếp dữ liệu theo ngày tăng dần
+        function sortPurchaseData() {
+            purchaseData.sort((a, b) => {
+                // Chuyển đổi ngày dạng "dd/mm" thành đối tượng Date để so sánh
+                const parseDate = (dateStr) => {
+                    const [day, month] = dateStr.split('/').map(Number);
+                    return new Date(a.year || new Date().getFullYear(), month - 1, day);
+                };
+                
+                return parseDate(a.date) - parseDate(b.date);
+            });
         }
-
-        filtered.forEach(r=>{
-            const emp = employees.find(x=>x.id===r.employeeId) || {};
-            const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-            const empShift = shifts[finalShiftKey];
-            const isEditing = isEditingAttendance[r.id];
+        
+        // Lấy tháng từ ngày (dd/mm -> mm)
+        function getMonthFromDate(dateStr) {
+            const parts = dateStr.split('/');
+            if (parts.length >= 2) {
+                return parseInt(parts[1]);
+            }
+            return new Date().getMonth() + 1;
+        }
+        
+        // Hàm phân tích đầu vào từ người dùng
+        function parsePurchaseInput(input) {
+            // Xử lý các từ khóa đặc biệt
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
             
-            let checkIn = r.checkIn || '---';
-            let checkOut = r.checkOut || '---';
-            let note = r.lateReason ? `Xin phép: ${r.lateReason}` : '';
-            let status = '';
-
-            let hoursText = '0 giờ 0 phút';
-            let finalCheckOut = r.checkOut;
-
-            const tr = document.createElement('tr');
-            tr.id = `att-row-${r.id}`;
-
-            if (isEditing) {
-                tr.innerHTML = `
-                    <td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
-                    <td>${emp.name||r.employeeName||'Unknown'}</td>
-                    <td>${empShift?.name||'N/A'}</td>
-                    <td><input type="time" step="1" class="form-control form-control-sm" id="edit-checkin-${r.id}" value="${r.checkIn || ''}"></td>
-                    <td><input type="time" step="1" class="form-control form-control-sm" id="edit-checkout-${r.id}" value="${r.checkOut || ''}"></td>
-                    <td>...</td>
-                    <td>...</td>
-                    <td><input type="text" class="form-control form-control-sm" id="edit-note-${r.id}" value="${r.lateReason || ''}"></td>
-                    <td class="d-flex gap-1">
-                        <button class="btn btn-sm btn-success btn-save-att" data-id="${r.id}"><i class="fas fa-save"></i></button>
-                        <button class="btn btn-sm btn-secondary btn-cancel-att" data-id="${r.id}"><i class="fas fa-times"></i></button>
+            // Định dạng ngày tháng
+            const formatDate = (date) => {
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+            };
+            
+            // Thay thế từ khóa
+            let processedInput = input.toLowerCase();
+            processedInput = processedInput.replace(/hôm nay/g, formatDate(today));
+            processedInput = processedInput.replace(/hôm qua/g, formatDate(yesterday));
+            
+            // Tách các phần tử
+            const parts = processedInput.split(' ');
+            if (parts.length < 3) {
+                return {
+                    success: false,
+                    message: "❌ Định dạng không đúng. Vui lòng nhập: <strong>Ngày SốTiền MụcĐích</strong><br>📝 Ví dụ: <span class='highlight'>17/1 2345 cồn</span>"
+                };
+            }
+            
+            // Lấy ngày (phần đầu tiên)
+            const datePart = parts[0];
+            
+            // Lấy số tiền (phần thứ hai)
+            const amountPart = parts[1];
+            const originalAmount = parseInt(amountPart);
+            
+            if (isNaN(originalAmount) || originalAmount <= 0) {
+                return {
+                    success: false,
+                    message: "❌ Số tiền không hợp lệ. Vui lòng nhập số tiền là số dương."
+                };
+            }
+            
+            // Quy đổi số tiền (nhân với 1000 nếu số tiền nhỏ hơn 1000)
+            const amount = originalAmount < 1000 ? originalAmount * 1000 : originalAmount;
+            
+            // Lấy mục đích (phần còn lại)
+            const purposePart = parts.slice(2).join(' ');
+            
+            return {
+                success: true,
+                date: datePart,
+                amount: amount,
+                purpose: purposePart,
+                originalAmount: originalAmount
+            };
+        }
+        
+        // Hàm thêm tin nhắn vào lịch sử chat
+        function addMessageToChat(sender, message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Hàm hiển thị dữ liệu mua hàng trong bảng
+        function renderPurchaseTable() {
+            tableBody.innerHTML = '';
+            
+            const selectedMonth = monthFilter.value;
+            let filteredData = purchaseData;
+            
+            // Lọc theo tháng nếu không chọn "all"
+            if (selectedMonth !== "all") {
+                filteredData = purchaseData.filter(item => {
+                    const itemMonth = getMonthFromDate(item.date).toString();
+                    return itemMonth === selectedMonth;
+                });
+            }
+            
+            if (filteredData.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="4" class="empty-state">
+                        <i class="fas fa-database"></i>
+                        <h3>${selectedMonth === "all" ? "Chưa có dữ liệu" : `Không có dữ liệu tháng ${selectedMonth}`}</h3>
+                        <p>Nhập thông tin qua chatbot để bắt đầu</p>
                     </td>
                 `;
-                attendanceTableBody.appendChild(tr);
+                tableBody.appendChild(emptyRow);
                 return;
             }
-
-            if(r.checkIn){
-                let inDT = new Date(`${r.date}T${r.checkIn}`);
-                let outDT = null;
-
-                if (!r.checkOut) {
-                    finalCheckOut = '23:00:00';
-                    outDT = new Date(`${r.date}T${finalCheckOut}`);
-                    note += ` / <span class="red-text">Quên chấm ra (23:00)</span>`;
-                } else {
-                    outDT = new Date(`${r.date}T${finalCheckOut}`);
-                }
-
-                if(outDT <= inDT) outDT.setDate(outDT.getDate() + 1);
-
-                const diff = Math.max(0, outDT - inDT);
-                const hrs = Math.floor(diff/3600000);
-                const mins = Math.round((diff%3600000)/60000);
-                hoursText = `${hrs} giờ ${mins} phút`;
-
-                const shiftStart = new Date(`${r.date}T${empShift.start}`);
-                const isEarlyOrOnTime = inDT.getTime() <= shiftStart.getTime();
-                const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
+            
+            // Thêm dữ liệu vào bảng
+            filteredData.forEach((item, index) => {
+                const row = document.createElement('tr');
                 
-                if (r.edited) {
-                    status = 'Sửa công (Phạt 20k)';
-                } else if (!r.checkOut) {
-                    status = 'Quên chấm ra (Phạt 20k)';
-                } else if (isEarlyOrOnTime) {
-                    status = 'Đúng giờ';
-                } else if (!isAfterGracePeriod) { 
-                    status = 'Đúng giờ (Grace period)'; 
-                } else if (isAfterGracePeriod) {
-                    if (r.isLate) {
-                        status = 'Đi muộn (Phạt 10k)'; 
-                    } else if (r.lateReason) {
-                        status = 'Đi muộn (Xin phép)'; 
-                    } else {
-                        status = 'Đi muộn (Lỗi dữ liệu củ)';
-                    }
-                } else {
-                    status = 'Lỗi trạng thái'; 
-                }
-            } else {
-                status = 'Vắng mặt';
+                row.innerHTML = `
+                    <td class="date-cell">
+                        <i class="fas fa-calendar-day"></i> ${item.date}
+                    </td>
+                    <td class="amount-cell">
+                        <i class="fas fa-money-bill-wave"></i> ${formatCurrency(item.amount)}
+                    </td>
+                    <td class="purpose-cell">
+                        <i class="fas fa-bullseye"></i> ${item.purpose}
+                    </td>
+                    <td>
+                        <button class="btn" onclick="editPurchase(${item.id})" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-clear" onclick="deletePurchase(${item.id})" style="padding: 5px 10px; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Hàm xóa purchase
+        window.deletePurchase = function(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) return;
+            
+            purchaseData = purchaseData.filter(item => item.id !== id);
+            saveDataToStorage();
+            renderPurchaseTable();
+            populateMonthFilter();
+            updateTotalAmount();
+            updateStatistics();
+            updateExcelPreview();
+            
+            addMessageToChat("Hệ thống", "✅ Đã xóa giao dịch thành công", "bot");
+        };
+        
+        // Hàm sửa purchase
+        window.editPurchase = function(id) {
+            const item = purchaseData.find(p => p.id === id);
+            if (!item) return;
+            
+            const newDate = prompt("Nhập ngày mới:", item.date);
+            if (!newDate) return;
+            
+            const newAmount = prompt("Nhập số tiền mới:", item.originalAmount);
+            if (!newAmount || isNaN(newAmount)) {
+                alert("Số tiền không hợp lệ!");
+                return;
             }
-
-            const isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
-            if (isHoliday) status += ' / Ngày lễ';
-
-            tr.innerHTML = `<td>${new Date(r.date).toLocaleDateString('vi-VN')}</td>
-                            <td>${emp.name||r.employeeName||'Unknown'}</td>
-                            <td>${empShift?.name||'N/A'}</td>
-                            <td>${checkIn}</td>
-                            <td>${finalCheckOut}</td>
-                            <td>${hoursText}</td>
-                            <td>${status}</td>
-                            <td>${note}</td>
-                            <td class="d-flex gap-1">
-                                <button class="btn btn-sm btn-info btn-edit-att" data-id="${r.id}"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger btn-delete-att" data-id="${r.id}"><i class="fas fa-trash"></i></button>
-                            </td>`;
-            attendanceTableBody.appendChild(tr);
-        });
-
-        document.querySelectorAll('.btn-edit-att').forEach(btn => btn.addEventListener('click', editAttendance));
-        document.querySelectorAll('.btn-delete-att').forEach(btn => btn.addEventListener('click', deleteAttendance));
-        document.querySelectorAll('.btn-save-att').forEach(btn => btn.addEventListener('click', saveAttendance));
-        document.querySelectorAll('.btn-cancel-att').forEach(btn => btn.addEventListener('click', cancelEditAttendance));
-    }
-
-    // --- CHỨC NĂNG SỬA/XÓA CHẤM CÔNG - giữ nguyên ---
-    function deleteAttendance(event) {
-        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
-        const id = event.currentTarget.getAttribute('data-id');
-        if (confirm('Bạn có chắc chắn muốn xóa lượt chấm công này không? Hành động này không thể hoàn tác.')) {
-            showLoading();
-            db.collection('attendance').doc(id).delete()
-                .then(() => {
-                    hideLoading();
-                    alert('Đã xóa lượt chấm công.');
-                })
-                .catch(err => {
-                    hideLoading();
-                    console.error("Lỗi xóa chấm công: ", err);
-                    alert('Đã xảy ra lỗi khi xóa.');
+            
+            const newPurpose = prompt("Nhập mục đích mới:", item.purpose);
+            if (!newPurpose) return;
+            
+            // Cập nhật dữ liệu
+            item.date = newDate;
+            item.originalAmount = parseInt(newAmount);
+            item.amount = item.originalAmount < 1000 ? item.originalAmount * 1000 : item.originalAmount;
+            item.purpose = newPurpose;
+            item.month = getMonthFromDate(newDate);
+            
+            saveDataToStorage();
+            renderPurchaseTable();
+            updateTotalAmount();
+            updateStatistics();
+            updateExcelPreview();
+            
+            addMessageToChat("Hệ thống", `✅ Đã cập nhật giao dịch: ${newDate} - ${formatCurrency(item.amount)} - ${newPurpose}`, "bot");
+        };
+        
+        // Hàm định dạng tiền tệ
+        function formatCurrency(amount) {
+            return amount.toLocaleString('vi-VN') + 'đ';
+        }
+        
+        // Hàm cập nhật tổng tiền
+        function updateTotalAmount() {
+            const selectedMonth = monthFilter.value;
+            let filteredData = purchaseData;
+            
+            if (selectedMonth !== "all") {
+                filteredData = purchaseData.filter(item => {
+                    const itemMonth = getMonthFromDate(item.date).toString();
+                    return itemMonth === selectedMonth;
                 });
-        }
-    }
-
-    function editAttendance(event) {
-        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
-        const id = event.currentTarget.getAttribute('data-id');
-        isEditingAttendance = { [id]: true };
-        populateAttendanceTable();
-    }
-
-    function cancelEditAttendance(event) {
-        const id = event.currentTarget.getAttribute('data-id');
-        delete isEditingAttendance[id];
-        populateAttendanceTable();
-    }
-
-    function saveAttendance(event) {
-        if (!isAdmin) { alert('Bạn cần quyền admin'); return; }
-        const id = event.currentTarget.getAttribute('data-id');
-        const newCheckIn = document.getElementById(`edit-checkin-${id}`).value || null;
-        const newCheckOut = document.getElementById(`edit-checkout-${id}`).value || null;
-        const newNote = document.getElementById(`edit-note-${id}`).value.trim() || null;
-
-        showLoading();
-        db.collection('attendance').doc(id).update({ checkIn: newCheckIn, checkOut: newCheckOut, lateReason: newNote, edited: true })
-            .then(() => {
-                delete isEditingAttendance[id];
-                hideLoading();
-                alert('Đã cập nhật lượt chấm công.');
-            })
-            .catch(err => { hideLoading(); console.error(err); alert('Lỗi cập nhật.'); });
-    }
-
-    // Add employee - giữ nguyên
-    function addEmployee(){ 
-        if(!isAdmin){ alert('Cần quyền admin'); return; } 
-        const name = document.getElementById('employeeName').value.trim(); 
-        if(!name){ alert('Nhập tên'); return; } 
-        const position = document.getElementById('employeePosition').value.trim(); 
-        const baseSalary = Number(document.getElementById('employeeBaseSalary').value) || 0; 
-        const shift = document.getElementById('employeeShift').value;
-        const username = toUsername(name);
-        const defaultPassword = 'thaithae';
-        showLoading(); 
-        db.collection('employees').add({ name, position, baseSalary, shift, username, password: defaultPassword, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
-        .then(()=>{ 
-            document.getElementById('employeeName').value=''; document.getElementById('employeePosition').value=''; document.getElementById('employeeBaseSalary').value=''; 
-            alert(`Đã thêm ${name} (username: ${username}, mật khẩu: ${defaultPassword})`); 
-            hideLoading(); 
-        })
-        .catch(err=>{ console.error(err); hideLoading(); alert('Lỗi thêm nhân viên'); }); 
-    }
-
-    // Admin verify - giữ nguyên
-    function verifyAdmin(){ 
-        const code = document.getElementById('adminCode').value; 
-        if(code==='thaithae2025@'){ 
-            isAdmin=true; 
-            adminVerificationArea.style.display = 'none'; 
-            adminFeatures.classList.remove('d-none'); 
-            personalAttendancePanel.style.display = 'none';
-            adminDashboardPanel.style.display = 'block';
-            populateAttendanceTable(); 
-            alert('Đã xác thực admin'); 
-        } else alert('Mã admin không đúng'); 
-    }
-    
-    // Admin Toggle - giữ nguyên
-    document.getElementById('adminToggle').addEventListener('click', () => {
-        const isCurrentlyAdmin = adminDashboardPanel.style.display === 'block';
-        if (isCurrentlyAdmin) {
-            adminDashboardPanel.style.display = 'none';
-            personalAttendancePanel.style.display = 'none';
-            isAdmin = false;
-        } else {
-            adminDashboardPanel.style.display = 'block';
-            personalAttendancePanel.style.display = 'none';
-        }
-    });
-
-    // Clear attendance - giữ nguyên
-    function clearAttendance(){ 
-        if(!isAdmin){ alert('Cần admin'); return; } 
-        if(!confirm('Xóa toàn bộ dữ liệu chấm công?')) return; 
-        showLoading(); 
-        db.collection('attendance').get().then(snap=>{ const batch = db.batch(); snap.forEach(doc=> batch.delete(doc.ref)); return batch.commit(); })
-        .then(()=>{ hideLoading(); alert('Đã xóa'); }).catch(err=>{ console.error(err); hideLoading(); alert('Lỗi xóa'); }); 
-    }
-
-    // Force logout all - giữ nguyên
-    function forceLogoutAll(){ 
-        if(!isAdmin) { alert('Cần admin'); return; } 
-        db.collection('meta').doc('session').set({forceLogoutAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
-        .then(()=> alert('Đã ép all logout')).catch(e=>alert('Lỗi')); 
-    }
-
-    // Load/Save Settings - giữ nguyên
-    function loadSettings(){ 
-        db.collection('meta').doc('payroll').get().then(doc=>{ 
-            if(doc.exists){ 
-                settings = {...settings, ...doc.data()}; 
-                document.getElementById('holidayList').value = settings.holidays.join('\n'); 
-                document.getElementById('wagePerHour').value = settings.wagePerHour||''; 
-                document.getElementById('defaultBonus').value = settings.defaultBonus||''; 
-                document.getElementById('defaultPenalty').value = settings.defaultPenalty||''; 
-                document.getElementById('editPenalty').value = settings.editPenalty||'20000'; 
-                document.getElementById('latePenalty').value = settings.latePenalty||'10000'; 
-                document.getElementById('forgotOutPenalty').value = settings.forgotOutPenalty||'20000'; 
-                document.getElementById('wifiIpAddress').value = settings.wifiIpAddress || '';
-                renderHolidays();
-            } 
-        }); 
-    }
-    
-    function renderHolidays(){
-        const holidayText = settings.holidays.length > 0 ? settings.holidays.map(h => new Date(h).toLocaleDateString('vi-VN')).join(', ') : 'Chưa có ngày lễ nào.';
-        document.getElementById('currentHolidays').textContent = `Ngày lễ đã lưu: ${holidayText}`;
-    }
-
-    function saveSettings(){ 
-        if(!isAdmin){ alert('Cần admin'); return; } 
-        settings.wagePerHour = Number(document.getElementById('wagePerHour').value)||0; 
-        settings.defaultBonus = Number(document.getElementById('defaultBonus').value)||0; 
-        settings.defaultPenalty = Number(document.getElementById('defaultPenalty').value)||0; 
-        settings.editPenalty = Number(document.getElementById('editPenalty').value)||20000; 
-        settings.latePenalty = Number(document.getElementById('latePenalty').value)||10000; 
-        settings.forgotOutPenalty = Number(document.getElementById('forgotOutPenalty').value)||20000; 
-        settings.wifiIpAddress = document.getElementById('wifiIpAddress').value.trim();
-        
-        const holidayInput = document.getElementById('holidayList').value;
-        settings.holidays = holidayInput.split(/[\n,]/).map(s=>s.trim()).filter(Boolean); 
-
-        db.collection('meta').doc('payroll').set(settings).then(()=>{ 
-            renderHolidays();
-            alert('Đã lưu cài đặt'); 
-        }); 
-    }
-
-    // Login flow - giữ nguyên
-    async function login(){ 
-        const username = toUsername(document.getElementById('loginUsername').value.trim()); 
-        const password = document.getElementById('loginPassword').value || ''; 
-        if(!username){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-warning">Nhập username</div>'; return; }
-        const emp = employees.find(e=> (e.username||'')===username );
-        if(!emp){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Không tìm thấy nhân viên</div>'; return; }
-        if((emp.password||'thaithae') !== password){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Mật khẩu sai</div>'; return; }
-        const expiresAt = Date.now() + SESSION_DURATION_MS;
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ employeeId: emp.id, username: emp.username, expiresAt, loginAt: Date.now() }));
-        applyLoggedIn(emp);
-    }
-    function loginById(){ 
-        const id = document.getElementById('loginUsername').value.trim(); 
-        if(!id){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-warning">Nhập ID</div>'; return; } 
-        const emp = employees.find(e=> e.id===id); 
-        if(!emp){ document.getElementById('loginMessage').innerHTML = '<div class="alert alert-danger">Không tìm thấy ID</div>'; return; } 
-        const expiresAt = Date.now() + SESSION_DURATION_MS; 
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ employeeId: emp.id, username: emp.username, expiresAt, loginAt: Date.now() })); 
-        applyLoggedIn(emp);
-    }
-
-    function applyLoggedIn(emp){ 
-        isAdmin = false;
-        loggedInUser = emp;
-        adminDashboardPanel.style.display = 'none'; 
-        personalAttendancePanel.style.display = 'block';
-        
-        loginArea.style.display='none'; 
-        clockingArea.classList.remove('d-none'); 
-        document.getElementById('loggedName').textContent = emp.name; 
-        document.getElementById('loggedPosition').textContent = emp.position||''; 
-        document.getElementById('loggedShift').textContent = shifts[emp.shift]?.name || 'Không xác định';
-
-        shiftSelect.innerHTML = '<option value="">--- VUI LÒNG CHỌN CA LÀM ---</option>'; 
-        for(const key in shifts){
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = `${shifts[key].name} (${shifts[key].start.substring(0,5)} - ${shifts[key].end.substring(0,5)})`;
-            if(emp.shift === key) {
-                option.setAttribute('selected', 'selected');
             }
-            shiftSelect.appendChild(option);
-        }
-
-        document.getElementById('loginMessage').innerHTML = '<div class="alert alert-success">Đăng nhập thành công</div>'; 
-        
-        loadPersonalAttendance(emp.id);
-        checkWeeklyLateNotes(emp.id);
-    }
-
-    function tryRestoreSession(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s) return false; 
-        try{ 
-            const obj = JSON.parse(s); 
-            if(Date.now() > obj.expiresAt) { localStorage.removeItem(SESSION_KEY); return false; } 
-            const emp = employees.find(e=> e.id===obj.employeeId); 
-            if(emp){ applyLoggedIn(emp); return true; } 
-        } catch(e){ console.error(e); } 
-        return false; 
-    }
-
-    // Logout - giữ nguyên
-    function logout(){ 
-        const s = localStorage.getItem(SESSION_KEY); 
-        if(!s) { location.reload(); return; } 
-        const obj = JSON.parse(s);
-        db.collection('meta').doc('session').get().then(doc=>{ 
-            const forceAt = doc.exists && doc.data().forceLogoutAt ? doc.data().forceLogoutAt.toMillis() : 0; 
-            if(forceAt && forceAt > (obj.loginAt||0)){ 
-                localStorage.removeItem(SESSION_KEY); 
-                location.reload(); 
-                return; 
-            }
-            if(Date.now() < obj.expiresAt){ 
-                alert('Phiên đăng nhập còn hiệu lực trong 4 ngày, không thể thoát. Liên hệ minhtan để ép đăng xuất.'); 
-                return; 
-            }
-            localStorage.removeItem(SESSION_KEY); 
-            location.reload(); 
-        }).catch(e=>{ console.error(e); alert('Lỗi kiểm tra phiên'); }); 
-    }
-
-    // Check-in - giữ nguyên
-    async function checkIn(){ 
-        if (!loggedInUser) {
-            alert('Bạn chưa đăng nhập'); 
-            return;
-        }
-        
-        const emp = loggedInUser;
-        const selectedShiftKey = shiftSelect.value;
-        if (!selectedShiftKey) {
-            alert('Vui lòng chọn ca làm việc của bạn hôm nay.');
-            return;
-        }
-
-        if (!(await isConnectedToAuthorizedWifi())) {
-            return;
-        }
-
-        const shift = shifts[selectedShiftKey];
-        const now = new Date(); 
-        const dateStr = now.toISOString().split('T')[0]; 
-        let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
-        
-        let isLate = false;
-        let finalTimeStr = timeStr; 
-
-        const lateReasonText = document.getElementById('lateReason').value.trim();
-
-        if(shift){ 
-            const shiftStart = new Date(`${dateStr}T${shift.start}`);
             
-            if(now.getTime() <= shiftStart.getTime()) { 
-                finalTimeStr = shift.start;
-            } 
-            else if (now.getTime() > shiftStart.getTime() + GRACE_PERIOD_MS) {
-                isLate = true; 
-            }
-        }
-
-        showLoading(); 
-        const q = await db.collection('attendance').where('employeeId','==',emp.id).where('date','==',dateStr).get(); 
-        if(!q.empty){ hideLoading(); alert('Bạn đã chấm công vào hôm nay'); return; }
-
-        await db.collection('attendance').add({ 
-            employeeId: emp.id, employeeName: emp.name, date: dateStr, 
-            checkIn: finalTimeStr, checkOut: null, 
-            shiftChosen: selectedShiftKey, 
-            edited: false, 
-            lateReason: lateReasonText, 
-            isLate: isLate && !lateReasonText, 
-            timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-        }); 
-        hideLoading(); 
-        
-        let alertMessage = `Đã chấm công vào lúc ${finalTimeStr}. Ca làm đã chọn: ${shift.name}.`;
-        
-        const shiftStart = new Date(`${dateStr}T${shift.start}`);
-        const isPastGrace = now.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
-        const isWithinGrace = now.getTime() > shiftStart.getTime() && !isPastGrace;
-
-        if (isPastGrace && isLate) {
-            alertMessage += ' Bạn đã đi muộn (ngoài 5 phút Grace Period) và sẽ bị phạt.';
-        } else if (isPastGrace && lateReasonText) {
-            alertMessage += ' Bạn đã đi muộn nhưng có ghi chú xin phép.';
-        } else if (isWithinGrace) {
-            alertMessage += ' Bạn đã chấm công trong thời gian Grace Period (<= 5 phút) và được tính là Đúng giờ.';
-        } else {
-             alertMessage += ' Bạn đã chấm công Đúng giờ.';
-        }
-
-        alert(alertMessage);
-        document.getElementById('lateReason').value = '';
-        checkWeeklyLateNotes(emp.id);
-    }
-
-    // Check-out - giữ nguyên
-    async function checkOut(){ 
-        if (!loggedInUser) {
-            alert('Bạn chưa đăng nhập');
-            return;
-        }
-
-        if (!(await isConnectedToAuthorizedWifi())) {
-            return;
+            const total = filteredData.reduce((sum, item) => sum + item.amount, 0);
+            totalAmountEl.textContent = `Tổng: ${formatCurrency(total)}`;
         }
         
-        const emp = loggedInUser;
-        const now = new Date(); const dateStr = now.toISOString().split('T')[0]; let timeStr = now.toLocaleTimeString('vi-VN',{hour12:false});
-        showLoading(); 
-        const q = await db.collection('attendance').where('employeeId','==',emp.id).where('date','==',dateStr).get(); 
-        if(q.empty){ hideLoading(); alert('Bạn chưa chấm công vào hôm nay'); return; }
-        const doc = q.docs[0]; const data = doc.data(); 
-        if(data.checkOut){ hideLoading(); alert('Bạn đã chấm công ra rồi'); return; }
-        await db.collection('attendance').doc(doc.id).update({ checkOut: timeStr, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); 
-        hideLoading(); alert(`Đã chấm công ra lúc ${timeStr}`);
-    }
-
-    // Payroll computation - giữ nguyên
-    function computePayroll(){ 
-        printPayrollBtn.classList.add('d-none'); 
-        
-        const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0);
-        const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59);
-        const selectedEmployeeId = document.getElementById('exportEmployee').value||'all';
-        const selectedPosition = document.getElementById('exportPosition').value||'all';
-
-        const holidays = settings.holidays||[];
-        const filtered = attendance.filter(r=>{ 
-            const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {};
+        // Hàm điền dữ liệu tháng vào filter
+        function populateMonthFilter() {
+            // Lấy tất cả các tháng duy nhất từ dữ liệu mua hàng
+            const months = [...new Set(purchaseData.map(item => getMonthFromDate(item.date)))];
+            months.sort((a, b) => a - b);
             
-            const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition;
-
-            return d>=start && d<=end && matchEmp && matchPos;
-        });
-        if(filtered.length===0){ alert('Không có dữ liệu để tính lương'); return; }
-
-        const byEmp = {};
-        for(const id in employees) { 
-            const emp = employees[id];
-            const matchEmp = selectedEmployeeId === 'all' || selectedEmployeeId === emp.id;
-            const matchPos = selectedPosition === 'all' || (emp.position||'').trim() === selectedPosition;
-
-            if (matchEmp && matchPos) {
-                byEmp[emp.id] = { emp, records: [] };
-            }
-        }
-        
-        filtered.forEach(r=>{
-            const emp = employees.find(e=>e.id===r.employeeId) || {name:r.employeeName||'Unknown', baseSalary:0, shift:r.shift||''};
-            if(!byEmp[r.employeeId]) byEmp[r.employeeId] = { emp, records: [] };
-            byEmp[r.employeeId].records.push(r);
-        });
-
-        payrollResults = {};
-        for(const empId in byEmp){
-            const {emp, records} = byEmp[empId];
-            const wagePerHour = settings.wagePerHour || emp.baseSalary || 0;
+            // Giữ tùy chọn "all" và thêm các tháng mới
+            const currentOptions = Array.from(monthFilter.options).map(opt => opt.value);
             
-            let finalBonus = settings.defaultBonus||0;
-            let finalEditPenalty = 0;
-
-            const bonusInput = document.getElementById(`payroll-bonus-${empId}`);
-            const penaltyInput = document.getElementById(`payroll-edit-penalty-${empId}`);
-            
-            if (bonusInput && penaltyInput) {
-                finalBonus = Number(bonusInput.value) || 0;
-                finalEditPenalty = Number(penaltyInput.value) || 0;
-            }
-
-            let totalDays=0; let totalWorkedMinutes=0; let totalOvertimeMinutes=0; 
-            let totalForgotOut = 0; let totalEdited = 0; 
-            let totalLate = 0; 
-            let totalWage = 0; let holidayDetails=[];
-
-            records.forEach(r=>{
-                if(!r.checkIn){ return; }
-                const currentShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-                const currentShift = shifts[currentShiftKey];
-
-                let inDT = new Date(`${r.date}T${r.checkIn}`);
-                let finalCheckOut = r.checkOut || '23:00:00'; 
-                let outDT = new Date(`${r.date}T${finalCheckOut}`);
-
-                if(outDT <= inDT) outDT.setDate(outDT.getDate()+1);
-                const diffMs = Math.max(0, outDT - inDT);
-                const workedMins = Math.round(diffMs/60000);
-
-                const isHoliday = holidays.indexOf(r.date) >= 0;
-                let wageForThisDay = (wagePerHour / 60) * workedMins;
-                
-                if(isHoliday) {
-                    let extraHolidayWage = wageForThisDay; 
-                    wageForThisDay += extraHolidayWage; 
-                    holidayDetails.push({date: r.date, minutes: workedMins, amount: Math.round(extraHolidayWage)});
-                }
-                totalWage += wageForThisDay;
-                totalWorkedMinutes += workedMins;
-                totalDays += 1;
-
-                if (!r.checkOut) totalForgotOut += 1;
-                if (r.edited) totalEdited += 1;
-                if (r.isLate) totalLate += 1;
-
-                if (currentShift && workedMins > currentShift.minutes) {
-                    totalOvertimeMinutes += (workedMins - currentShift.minutes);
+            months.forEach(month => {
+                if (!currentOptions.includes(month.toString())) {
+                    const option = document.createElement('option');
+                    option.value = month;
+                    option.textContent = `Tháng ${month}`;
+                    monthFilter.appendChild(option);
                 }
             });
-
-            const totalLatePenalties = totalLate * settings.latePenalty;
-            const totalForgotOutPenalties = totalForgotOut * settings.forgotOutPenalty;
-            
-            const totalStatutoryPenalty = (settings.defaultPenalty || 0) + totalLatePenalties + totalForgotOutPenalties; 
-
-            if (!bonusInput) {
-                finalEditPenalty = totalEdited * settings.editPenalty;
+        }
+        
+        // Hàm bật/tắt thống kê
+        function toggleStatistics() {
+            if (purchaseData.length === 0) {
+                alert("Không có dữ liệu để thống kê!");
+                return;
             }
-
-            const totalExtraHolidayWage = holidayDetails.reduce((sum, h) => sum + h.amount, 0);
-
-            const net = totalWage + finalBonus - totalStatutoryPenalty - finalEditPenalty;
-
-            const hrs = Math.floor(totalWorkedMinutes/60);
-            const mins = Math.round(totalWorkedMinutes%60);
-            const workedHoursText = `${hrs} giờ ${mins} phút`;
-
-            const otHrs = Math.floor(totalOvertimeMinutes/60);
-            const otMins = Math.round(totalOvertimeMinutes%60);
-            const overtimeHoursText = `${otHrs} giờ ${otMins} phút`;
-
-            payrollResults[empId] = {
-                emp, totalDays, workedHoursText, overtimeHoursText,
-                totalWage: Math.round(totalWage - totalExtraHolidayWage), 
-                baseWage: Math.round(totalWage),
-                bonus: finalBonus,
-                penalty: Math.round(totalStatutoryPenalty),
-                editPenalty: Math.round(finalEditPenalty),
-                latePenalties: Math.round(totalLatePenalties), 
-                forgotOutPenalties: Math.round(totalForgotOutPenalties),
-                totalExtraHolidayWage: Math.round(totalExtraHolidayWage),
-                net: Math.round(net),
-                holidayDetails, totalEdited, totalLate, totalForgotOut
-            };
-        }
-        displayPayrollResults();
-        printPayrollBtn.classList.remove('d-none');
-    }
-    
-    // Display Payroll Result - giữ nguyên
-    function displayPayrollResults(){ 
-        if(Object.keys(payrollResults).length === 0) {
-            payrollResultArea.style.display='none';
-            alert('Không có kết quả tính lương.');
-            return;
-        }
-
-        payrollResultArea.style.display='block';
-        payrollResult.innerHTML = '';
-
-        for(const empId in payrollResults){
-            const r = payrollResults[empId];
-            const emp = r.emp;
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage; 
-
-            let html = `<div class="card mb-3 p-3 border-left-success">
-                <h6 class="text-primary">${emp.name} (${emp.position||''})</h6>
-                <table class="table table-sm table-borderless small">
-                    <tr><th>Tổng ngày công:</th><td>${r.totalDays} ngày</td></tr>
-                    <tr><th>Tổng giờ làm:</th><td>${r.workedHoursText}</td></tr>
-                    <tr><th>Tổng giờ làm thêm:</th><td>${r.overtimeHoursText}</td></tr>
-                    <tr><th>Số lần sửa công:</th><td>${r.totalEdited} lần</td></tr>
-                    <tr><th>Số lần đi muộn (bị phạt):</th><td>${r.totalLate} lần</td></tr>
-                    <tr><th>Số lần quên chấm ra:</th><td>${r.totalForgotOut} lần</td></tr>
-                </table>
-
-                <h6 class="text-success mt-2">Chi tiết Lương</h6>
-                <table class="table table-sm table-striped small">
-                    <tr><th>1. Tổng lương (theo giờ, chưa x2 ngày lễ):</th><td class="text-end">${formatVND(baseWageForTotalHours)}</td></tr>
-                    <tr><th>2. Lương ngày lễ được cộng thêm:</th><td class="text-end text-success">+ ${formatVND(r.totalExtraHolidayWage)}</td></tr>
-                    <tr><th>3. Thưởng (Tự điền):</th> <td class="text-end text-success">
-                            + <input type="number" class="form-control form-control-sm text-end d-inline w-50" 
-                                id="payroll-bonus-${empId}" value="${r.bonus}">
-                        </td>
-                    </tr>
-                    <tr><td colspan="2"><hr class="my-1"></td></tr>
-                    <tr><th>Tổng thu nhập (1+2+3):</th><td class="text-end fw-bold">${formatVND(baseWageForTotalHours + r.totalExtraHolidayWage + r.bonus)}</td></tr>
-                    <tr><td colspan="2"><hr class="my-1"></td></tr>
-                    <tr><th>4. Phạt chung (Admin):</th><td class="text-end red-text">- ${formatVND(settings.defaultPenalty||0)}</td></tr>
-                    <tr><th>5. Phạt đi muộn (${r.totalLate} lần):</th><td class="text-end red-text">- ${formatVND(r.latePenalties)}</td></tr>
-                    <tr><th>6. Phạt quên chấm ra (${r.totalForgotOut} lần):</th><td class="text-end red-text">- ${formatVND(r.forgotOutPenalties)}</td></tr>
-                    <tr><th>7. Phạt (Tự điền):</th> <td class="text-end red-text">
-                            - <input type="number" class="form-control form-control-sm text-end d-inline w-50" 
-                                id="payroll-edit-penalty-${empId}" value="${r.editPenalty}">
-                        </td>
-                    </tr>
-                    <tr><th>Tổng Khấu trừ (4+5+6+7):</th><td class="text-end red-text fw-bold">- ${formatVND(r.penalty + r.editPenalty)}</td></tr>
-                    <tr class="summary-row"><th>TỔNG THỰC NHẬN:</th><td class="text-end text-primary fs-5">${formatVND(r.net)}</td></tr>
-                </table>
-            </div>`;
-            payrollResult.innerHTML += html;
-        }
-    }
-
-    // --- ĐÂY LÀ HÀM EXPORT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ TÍNH GIỜ MUỘN/SỚM ---
-    function exportToExcel(){ 
-        // 1. Lấy thông tin bộ lọc
-        const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value) : new Date('1970-01-01'); start.setHours(0,0,0); 
-        const end = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value) : new Date('3000-01-01'); end.setHours(23,59,59); 
-        const selectedEmployeeId = document.getElementById('exportEmployee').value||'all';
-        const selectedPosition = document.getElementById('exportPosition').value||'all';
-
-        // 2. Lọc dữ liệu
-        const filtered = attendance.filter(r=>{ 
-            const d = new Date(r.date); 
-            const emp = employees.find(x=>x.id===r.employeeId) || {};
-            const matchEmp = selectedEmployeeId==='all' || r.employeeId===selectedEmployeeId; 
-            const matchPos = selectedPosition==='all' || (emp.position||'').trim() === selectedPosition;
-            return d>=start && d<=end && matchEmp && matchPos;
-        });
-        
-        if(filtered.length===0){ alert('Không có dữ liệu để xuất'); return; }
-        
-        // 3. Xử lý dữ liệu chi tiết
-        const data = filtered.map((r, index) => { 
-            const emp = employees.find(e=> e.id===r.employeeId)||{}; 
-            // Lấy thông tin ca làm việc chuẩn
-            const finalShiftKey = r.shiftChosen || emp.shift || 'shift2'; 
-            const empShift = shifts[finalShiftKey];
-
-            let working = ''; 
-            let lateMins = 0;
-            let earlyMins = 0;
-            let finalCheckOut = r.checkOut || '';
-            let statusText = '';
-
-            // Hàm phụ: Đổi giờ HH:mm:ss sang số phút để tính toán
-            const toMinutes = (timeStr) => {
-                if(!timeStr) return 0;
-                const [h, m] = timeStr.split(':').map(Number);
-                return h * 60 + m;
-            };
-
-            if(r.checkIn){ 
-                // --- TÍNH TOÁN THỜI GIAN ---
-                const shiftStartMins = toMinutes(empShift.start);
-                const shiftEndMins = toMinutes(empShift.end);
-                const checkInMins = toMinutes(r.checkIn);
-                
-                // 1. Tính đi muộn (Nếu giờ vào > giờ ca bắt đầu)
-                if (checkInMins > shiftStartMins) {
-                    lateMins = checkInMins - shiftStartMins;
-                }
-
-                // 2. Tính về sớm & Tổng giờ làm (Chỉ tính khi đã Check-out)
-                if (r.checkOut) {
-                    const checkOutMins = toMinutes(r.checkOut);
-                    
-                    // Tính về sớm (Nếu giờ ra < giờ ca kết thúc, chỉ tính ca ngày thường)
-                    if (shiftStartMins < shiftEndMins) { // Ca ngày thường
-                        if (checkOutMins < shiftEndMins) {
-                            earlyMins = shiftEndMins - checkOutMins;
-                        }
-                    }
-
-                    // Tính tổng giờ làm
-                    let inDT = new Date(`${r.date}T${r.checkIn}`); 
-                    let outDT = new Date(`${r.date}T${r.checkOut}`); 
-                    if(outDT <= inDT) outDT.setDate(outDT.getDate()+1); 
-                    
-                    const diff = outDT - inDT; 
-                    const hrs = Math.floor(diff/3600000); 
-                    const mins = Math.round((diff%3600000)/60000); 
-                    working = `${hrs}h ${mins}p`; 
-                } else {
-                    working = 'Chưa checkout';
-                }
-
-                // Trạng thái hiển thị text
-                if (r.edited) statusText = 'Đã sửa';
-                else if (!r.checkOut) statusText = 'Quên ra';
-                else if (lateMins > 0) statusText = 'Đi muộn';
-                else if (earlyMins > 0) statusText = 'Về sớm';
-                else statusText = 'Đúng giờ';
-
-                if (settings.holidays && settings.holidays.indexOf(r.date)>=0) statusText += ' (Lễ)';
-
-            } else { statusText = 'Vắng mặt'; }
-
-            // Trả về dòng dữ liệu cho Excel (Khớp với Ảnh 1)
-            return { 
-                'STT': index + 1,
-                'Ngày': r.date, 
-                'Mã NV': emp.username || emp.id, 
-                'Họ và tên': emp.name || r.employeeName || 'Unknown', 
-                'Ca làm việc': empShift ? `${empShift.name} (${empShift.start.slice(0,5)} - ${empShift.end.slice(0,5)})` : 'N/A', 
-                'Giờ vào': r.checkIn || '', 
-                'Giờ ra': finalCheckOut, 
-                'Đi muộn (phút)': lateMins > 0 ? lateMins : '', 
-                'Về sớm (phút)': earlyMins > 0 ? earlyMins : '',   
-                'Tổng giờ làm': working, 
-                'Trạng thái': statusText, 
-                'Ghi chú': r.lateReason || ''
-            }; 
-        });
-
-        // 4. Tạo file Excel và định dạng cột
-        const ws = XLSX.utils.json_to_sheet(data); 
-        
-        // Chỉnh độ rộng cột cho đẹp
-        const wscols = [
-            {wch: 5},  // STT
-            {wch: 12}, // Ngày
-            {wch: 15}, // Mã NV
-            {wch: 25}, // Họ tên
-            {wch: 25}, // Ca làm việc
-            {wch: 10}, // Giờ vào
-            {wch: 10}, // Giờ ra
-            {wch: 15}, // Đi muộn
-            {wch: 15}, // Về sớm
-            {wch: 15}, // Tổng giờ làm
-            {wch: 15}, // Trạng thái
-            {wch: 30}  // Ghi chú
-        ];
-        ws['!cols'] = wscols;
-
-        const wb = XLSX.utils.book_new(); 
-        XLSX.utils.book_append_sheet(wb, ws, 'ChiTietChamCong'); 
-        
-        const filename = `ChiTiet_${document.getElementById('startDate').value||'all'}_${document.getElementById('endDate').value||'all'}.xlsx`; 
-        XLSX.writeFile(wb, filename);
-    }
-
-    // Print/Export Payroll - giữ nguyên
-    function generatePayslipHTML(results){ 
-        payslipContainer.innerHTML = '';
-        if(Object.keys(results).length === 0) return;
-
-        for(const empId in results){
-            const r = results[empId];
-            const emp = r.emp;
-            let holidayDetailText = r.holidayDetails.map(h=>`<li>Ngày ${h.date}: ${h.minutes/60} giờ (Cộng thêm: ${formatVND(h.amount)})</li>`).join('');
             
-            const baseWageForTotalHours = r.baseWage - r.totalExtraHolidayWage; 
-
-            let html = `<div class="payslip mb-5">
-                <h4>PHIẾU LƯƠNG NHÂN VIÊN THAI THAE</h4>
-                <h5>Từ ngày ${document.getElementById('startDate').value} đến ${document.getElementById('endDate').value}</h5>
-                <p><strong>Nhân viên:</strong> ${emp.name} | <strong>Chức vụ:</strong> ${emp.position||'N/A'} | <strong>Lương cơ bản/giờ:</strong> ${formatVND(settings.wagePerHour || emp.baseSalary || 0)}</p>
-
-                <table class="table table-bordered">
-                    <thead><tr><th colspan="2" class="text-center bg-light">THÔNG TIN CHẤM CÔNG</th></tr></thead>
-                    <tbody>
-                        <tr><td>**Ngày công:**</td><td class="text-end">${r.totalDays} ngày</td></tr>
-                        <tr><td>**Tổng giờ làm:**</td><td class="text-end">${r.workedHoursText}</td></tr>
-                        <tr><td>**Tổng giờ làm thêm:**</td><td class="text-end">${r.overtimeHoursText}</td></tr>
-                        <tr><td>**Lần sửa công:**</td><td class="text-end">${r.totalEdited} lần</td></tr>
-                        <tr><td>**Lần quên chấm ra:**</td><td class="text-end">${r.totalForgotOut} lần</td></tr>
-                    </tbody>
-                </table>
-
-                <table class="table table-bordered">
-                    <thead><tr><th colspan="2" class="text-center bg-light">CHI TIẾT TÍNH LƯƠNG</th></tr></thead>
-                    <tbody>
-                        <tr><th>1. TỔNG LƯƠNG (theo giờ, chưa x2 ngày lễ):</th><td class="text-end">${formatVND(baseWageForTotalHours)}</td></tr>
-                        <tr><th>2. LƯƠNG NGÀY LỄ (Cộng thêm 100%):</th><td class="text-end text-success">+ ${formatVND(r.totalExtraHolidayWage)}</td></tr>
-                        <tr><th>3. THƯỞNG (Tự điền):</th><td class="text-end text-success">+ ${formatVND(r.bonus)}</td></tr>
-                        
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-                        <tr><th>Tổng thu nhập:</th><td class="text-end fw-bold">${formatVND(baseWageForTotalHours + r.bonus + r.totalExtraHolidayWage)}</td></tr>
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-
-                        <tr><th>4. PHẠT CHUNG (Admin):</th><td class="text-end red-text">- ${formatVND(settings.defaultPenalty||0)}</td></tr>
-                        <tr><th>5. PHẠT ĐI MUỘN (${r.totalLate} lần):</th><td class="text-end red-text">- ${formatVND(r.latePenalties)}</td></tr>
-                        <tr><th>6. PHẠT QUÊN CHẤM RA (${r.totalForgotOut} lần):</th><td class="text-end red-text">- ${formatVND(r.forgotOutPenalties)}</td></tr>
-                        <tr><th>7. PHẠT (Tự điền):</th><td class="text-end red-text">- ${formatVND(r.editPenalty)}</td></tr> <tr><th>TỔNG KHẤU TRỪ:</th><td class="text-end red-text fw-bold">- ${formatVND(r.penalty + r.editPenalty)}</td></tr>
-                        
-                        <tr class="summary-row"><th>TỔNG THỰC NHẬN:</th><td class="text-end text-primary fs-5"><strong>${formatVND(r.net)}</strong></td></tr>
-                    </tbody>
-                </table>
-                
-                <p class="small text-muted"><strong>Chi tiết Ngày lễ được nhân đôi:</strong></p>
-                <ul class="small text-muted">${holidayDetailText || 'Không có ngày lễ trong kỳ này.'}</ul>
-            </div>`;
-            payslipContainer.innerHTML += html;
-        }
-        const modal = new bootstrap.Modal(document.getElementById('printExportModal'));
-        modal.show();
-    }
-
-    // Hàm xuất Excel bảng lương với các sheet chi tiết - THÊM MỚI
-    function exportPayrollWithDetailSheets() {
-        if (Object.keys(payrollResults).length === 0) {
-            alert('Chưa có dữ liệu tính lương. Vui lòng tính lương trước.');
-            return;
-        }
-
-        const wb = XLSX.utils.book_new();
-
-        /* =========================
-           SHEET 1: TỔNG HỢP LƯƠNG
-        ========================== */
-        const summaryData = [];
-
-        Object.values(payrollResults).forEach(p => {
-            const baseWageForTotalHours = p.baseWage - p.totalExtraHolidayWage;
+            const isVisible = statisticsSection.style.display !== 'none';
+            statisticsSection.style.display = isVisible ? 'none' : 'grid';
+            statsBtn.innerHTML = isVisible ? 
+                '<i class="fas fa-chart-bar"></i> Thống Kê' : 
+                '<i class="fas fa-times"></i> Đóng Thống Kê';
             
-            summaryData.push({
-                "Mã NV": p.emp.id,
-                "Nhân viên": p.emp.name,
-                "Chức vụ": p.emp.position || "",
-                "Ngày công": p.totalDays,
-                "Tổng giờ làm": p.workedHoursText,
-                "Tổng giờ làm thêm": p.overtimeHoursText,
-                "Lương cơ bản/giờ": formatVND(settings.wagePerHour || p.emp.baseSalary || 0),
-                "Tổng lương (chưa x2 lễ)": formatVND(baseWageForTotalHours),
-                "Lương ngày lễ cộng thêm": formatVND(p.totalExtraHolidayWage),
-                "Thưởng": formatVND(p.bonus),
-                "Phạt chung": formatVND(settings.defaultPenalty || 0),
-                "Phạt đi muộn": formatVND(p.latePenalties),
-                "Phạt quên chấm ra": formatVND(p.forgotOutPenalties),
-                "Phạt khác": formatVND(p.editPenalty),
-                "Tổng thực nhận (VND)": formatVND(p.net)
-            });
-        });
-
-        const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+            if (!isVisible) {
+                updateStatistics();
+            }
+        }
         
-        // Định dạng độ rộng cột cho đẹp
-        const wscols = [
-            {wch: 8},   // Mã NV
-            {wch: 20},  // Nhân viên
-            {wch: 15},  // Chức vụ
-            {wch: 10},  // Ngày công
-            {wch: 15},  // Tổng giờ làm
-            {wch: 15},  // Tổng giờ làm thêm
-            {wch: 18},  // Lương cơ bản/giờ
-            {wch: 20},  // Tổng lương
-            {wch: 20},  // Lương ngày lễ
-            {wch: 15},  // Thưởng
-            {wch: 12},  // Phạt chung
-            {wch: 15},  // Phạt đi muộn
-            {wch: 15},  // Phạt quên ra
-            {wch: 12},  // Phạt khác
-            {wch: 18}   // Tổng thực nhận
-        ];
-        wsSummary['!cols'] = wscols;
-        
-        XLSX.utils.book_append_sheet(wb, wsSummary, "TỔNG HỢP LƯƠNG");
-
-        /* =========================
-           CÁC SHEET CHI TIẾT CHẤM CÔNG
-        ========================== */
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-
-        Object.values(payrollResults).forEach(p => {
-            const emp = p.emp;
+        // Hàm cập nhật thống kê
+        function updateStatistics() {
+            const selectedMonth = monthFilter.value;
+            let filteredData = purchaseData;
             
-            // Lọc chấm công của nhân viên này trong khoảng thời gian
-            const empAttendance = attendance.filter(r => {
-                const dateMatch = (!startDate || r.date >= startDate) && 
-                                  (!endDate || r.date <= endDate);
-                return r.employeeId === emp.id && dateMatch;
-            });
-
-            if (empAttendance.length === 0) return;
-
-            const detailRows = [];
-
-            empAttendance.forEach(r => {
-                const shiftKey = r.shiftChosen || emp.shift || 'shift2';
-                const shift = shifts[shiftKey];
-
-                // Tính giờ làm việc
-                let workHoursText = '0 giờ 0 phút';
-                let checkout = r.checkOut || '';
-                let status = '';
-                let note = r.lateReason || '';
-
-                if (r.checkIn) {
-                    let inDT = new Date(`${r.date}T${r.checkIn}`);
-                    let outDT = null;
-
-                    if (!r.checkOut) {
-                        checkout = '23:00:00';
-                        outDT = new Date(`${r.date}T${checkout}`);
-                        note = note ? `${note} / Quên chấm ra` : 'Quên chấm ra (23:00)';
-                    } else {
-                        outDT = new Date(`${r.date}T${r.checkOut}`);
-                    }
-
-                    if (outDT <= inDT) outDT.setDate(outDT.getDate() + 1);
-                    const diff = Math.max(0, outDT - inDT);
-                    const hrs = Math.floor(diff / 3600000);
-                    const mins = Math.round((diff % 3600000) / 60000);
-                    workHoursText = `${hrs} giờ ${mins} phút`;
-
-                    // Xác định trạng thái
-                    if (r.edited) {
-                        status = 'Sửa công (Phạt 20k)';
-                    } else if (!r.checkOut) {
-                        status = 'Quên chấm ra (Phạt 20k)';
-                    } else if (r.lateReason) {
-                        status = 'Đi muộn (Xin phép)';
-                    } else if (r.isLate) {
-                        status = 'Đi muộn (Phạt 10k)';
-                    } else {
-                        // Kiểm tra grace period
-                        const shiftStart = new Date(`${r.date}T${shift.start}`);
-                        const isAfterGracePeriod = inDT.getTime() > (shiftStart.getTime() + GRACE_PERIOD_MS);
-                        if (isAfterGracePeriod) {
-                            status = 'Đi muộn (Phạt 10k)';
-                        } else {
-                            status = 'Đúng giờ';
-                        }
-                    }
-                } else {
-                    status = 'Vắng mặt';
-                }
-
-                // Kiểm tra ngày lễ
-                const isHoliday = settings.holidays && settings.holidays.indexOf(r.date) >= 0;
-                if (isHoliday) status += ' / Ngày lễ';
-
-                detailRows.push({
-                    "Ngày": new Date(r.date).toLocaleDateString('vi-VN'),
-                    "Nhân viên": emp.name || "",
-                    "Ca": shift?.name || "",
-                    "Giờ vào": r.checkIn || "",
-                    "Giờ ra": checkout,
-                    "Giờ làm": workHoursText,
-                    "Trạng thái": status,
-                    "Ghi chú / Xin phép": note
+            if (selectedMonth !== "all") {
+                filteredData = purchaseData.filter(item => {
+                    const itemMonth = getMonthFromDate(item.date).toString();
+                    return itemMonth === selectedMonth;
                 });
+            }
+            
+            if (filteredData.length === 0) {
+                document.getElementById('stat-total').textContent = '0đ';
+                document.getElementById('stat-average').textContent = '0đ';
+                document.getElementById('stat-max').textContent = '0đ';
+                document.getElementById('stat-count').textContent = '0';
+                return;
+            }
+            
+            const total = filteredData.reduce((sum, item) => sum + item.amount, 0);
+            const average = Math.round(total / filteredData.length);
+            const max = Math.max(...filteredData.map(item => item.amount));
+            const count = filteredData.length;
+            
+            document.getElementById('stat-total').textContent = formatCurrency(total);
+            document.getElementById('stat-average').textContent = formatCurrency(average);
+            document.getElementById('stat-max').textContent = formatCurrency(max);
+            document.getElementById('stat-count').textContent = count;
+        }
+        
+        // Hàm cập nhật preview Excel
+        function updateExcelPreview() {
+            previewBody.innerHTML = '';
+            
+            if (purchaseData.length === 0) return;
+            
+            // Hiển thị 5 dòng đầu tiên
+            const previewData = purchaseData.slice(0, 5);
+            
+            previewData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                    <td>${item.purpose}</td>
+                    <td>${item.month}</td>
+                `;
+                previewBody.appendChild(row);
             });
-
-            // Tạo tên sheet (cắt ngắn nếu quá dài)
-            const dateRange = startDate && endDate ? 
-                `${startDate.slice(8,10)}-${startDate.slice(5,7)}_${endDate.slice(8,10)}-${endDate.slice(5,7)}` : 
-                'full';
-            let sheetName = `${emp.name}_${dateRange}`.substring(0, 31); // Excel giới hạn 31 ký tự
             
-            const wsDetail = XLSX.utils.json_to_sheet(detailRows);
+            if (purchaseData.length > 5) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center; font-style: italic; color: #7f8c8d;">
+                        ... và ${purchaseData.length - 5} dòng khác
+                    </td>
+                `;
+                previewBody.appendChild(row);
+            }
             
-            // Định dạng độ rộng cột cho sheet chi tiết
-            const detailCols = [
-                {wch: 12},  // Ngày
-                {wch: 20},  // Nhân viên
-                {wch: 15},  // Ca
-                {wch: 10},  // Giờ vào
-                {wch: 10},  // Giờ ra
-                {wch: 15},  // Giờ làm
-                {wch: 20},  // Trạng thái
-                {wch: 30}   // Ghi chú
+            excelPreview.style.display = 'block';
+        }
+        
+        // HÀM XUẤT EXCEL CHUYÊN NGHIỆP
+        async function exportToExcelPro() {
+            if (purchaseData.length === 0) {
+                showNotification("Không có dữ liệu để xuất!", true);
+                return;
+            }
+            
+            // Hiển thị thanh tiến trình
+            exportProgress.style.display = 'block';
+            progressFill.style.width = '0%';
+            
+            try {
+                // Tạo workbook mới
+                const workbook = new ExcelJS.Workbook();
+                workbook.creator = 'Quản Lý Mua Hàng Pro';
+                workbook.created = new Date();
+                workbook.modified = new Date();
+                
+                // Thêm metadata
+                workbook.properties.title = "Báo cáo chi tiêu";
+                workbook.properties.subject = "Quản lý mua hàng";
+                workbook.properties.author = "Hệ thống QLMH Pro";
+                
+                // Tạo các sheet theo tháng
+                const dataByMonth = groupDataByMonth();
+                const monthKeys = Object.keys(dataByMonth);
+                
+                // Tạo sheet cho từng tháng
+                for (let i = 0; i < monthKeys.length; i++) {
+                    const month = monthKeys[i];
+                    const monthData = dataByMonth[month];
+                    
+                    const sheetName = `Tháng ${month}`;
+                    const worksheet = workbook.addWorksheet(sheetName);
+                    
+                    // Định dạng sheet theo tháng
+                    await formatMonthSheet(worksheet, monthData, month, i);
+                    
+                    // Cập nhật tiến trình
+                    progressFill.style.width = `${((i + 1) / (monthKeys.length + 2)) * 100}%`;
+                }
+                
+                // Tạo sheet Tổng hợp nếu được chọn
+                if (optionSummary.querySelector('input').checked) {
+                    progressFill.style.width = `${((monthKeys.length + 1) / (monthKeys.length + 2)) * 100}%`;
+                    await createSummarySheet(workbook);
+                }
+                
+                // Tạo sheet Thống kê nếu được chọn
+                if (optionStats.querySelector('input').checked) {
+                    progressFill.style.width = `${((monthKeys.length + 2) / (monthKeys.length + 2)) * 100}%`;
+                    await createStatisticsSheet(workbook);
+                }
+                
+                // Xuất file
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { 
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                });
+                
+                const fileName = `BaoCaoChiTieu_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                saveAs(blob, fileName);
+                
+                // Hiển thị thông báo
+                showNotification(`Đã xuất file ${fileName} thành công!`);
+                
+                // Ẩn thanh tiến trình
+                setTimeout(() => {
+                    exportProgress.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 1000);
+                
+            } catch (error) {
+                console.error("Lỗi xuất Excel:", error);
+                showNotification("Lỗi xuất file Excel: " + error.message, true);
+                exportProgress.style.display = 'none';
+            }
+        }
+        
+        // Hàm nhóm dữ liệu theo tháng
+        function groupDataByMonth() {
+            const dataByMonth = {};
+            
+            purchaseData.forEach(item => {
+                const month = item.month || getMonthFromDate(item.date);
+                if (!dataByMonth[month]) {
+                    dataByMonth[month] = [];
+                }
+                dataByMonth[month].push(item);
+            });
+            
+            return dataByMonth;
+        }
+        
+        // Hàm định dạng sheet theo tháng
+        async function formatMonthSheet(worksheet, data, month, sheetIndex) {
+            // Thiết lập cột
+            worksheet.columns = [
+                { header: 'STT', key: 'stt', width: 8 },
+                { header: 'Ngày', key: 'date', width: 15 },
+                { header: 'Số Tiền', key: 'amount', width: 20 },
+                { header: 'Mục Đích', key: 'purpose', width: 40 },
+                { header: 'Ghi Chú', key: 'note', width: 30 }
             ];
-            wsDetail['!cols'] = detailCols;
             
-            XLSX.utils.book_append_sheet(wb, wsDetail, sheetName);
-        });
-
-        /* =========================
-           XUẤT FILE
-        ========================== */
-        const filename = `Bang_luong_chi_tiet_${startDate || 'all'}_${endDate || 'all'}.xlsx`;
-        XLSX.writeFile(wb, filename);
-    }
-
-    // Tải phiếu lương dưới dạng file ZIP - giữ nguyên
-    async function downloadPayslipsAsZip() {
-        const payslips = document.querySelectorAll('.payslip');
-        if (payslips.length === 0) {
-            alert('Không có phiếu lương để tải.');
-            return;
-        }
-
-        const zip = new JSZip();
-        const downloadBtn = document.getElementById('downloadPayslipsZipBtn');
-        const originalBtnText = downloadBtn.innerHTML;
-        downloadBtn.disabled = true;
-        downloadBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...`;
-
-        try {
-            let i = 0;
-            for (const slip of payslips) {
-                const empName = slip.querySelector('p strong').textContent.split('|')[0].trim().replace('Nhân viên:', '').trim();
+            // Tiêu đề sheet
+            const titleRow = worksheet.getRow(1);
+            titleRow.height = 40;
+            worksheet.mergeCells('A1:E1');
+            const titleCell = worksheet.getCell('A1');
+            titleCell.value = `BÁO CÁO CHI TIÊU THÁNG ${month} - ${new Date().getFullYear()}`;
+            titleCell.font = {
+                name: 'Arial',
+                size: 16,
+                bold: true,
+                color: { argb: 'FFFFFF' }
+            };
+            titleCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '3498DB' }
+            };
+            titleCell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            
+            // Header
+            const headerRow = worksheet.getRow(2);
+            headerRow.height = 30;
+            headerRow.font = {
+                name: 'Arial',
+                size: 11,
+                bold: true,
+                color: { argb: 'FFFFFF' }
+            };
+            headerRow.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '2C3E50' }
+            };
+            headerRow.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            
+            // Thêm dữ liệu
+            let currentRow = 3;
+            let totalAmount = 0;
+            
+            data.forEach((item, index) => {
+                const row = worksheet.getRow(currentRow);
+                row.getCell('stt').value = index + 1;
+                row.getCell('date').value = item.date;
+                row.getCell('amount').value = item.amount;
+                row.getCell('purpose').value = item.purpose;
+                row.getCell('note').value = '';
                 
-                downloadBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang chụp ảnh ${++i}/${payslips.length}...`;
-
-                const canvas = await html2canvas(slip, { scale: 2 });
-                const pngData = canvas.toDataURL('image/png').split(',')[1];
+                // Định dạng số tiền
+                const amountCell = row.getCell('amount');
+                amountCell.numFmt = '#,##0"đ"';
                 
-                zip.file(`${i}_${empName}.png`, pngData, { base64: true });
-            }
-
-            downloadBtn.innerHTML = `<i class="fas fa-file-archive"></i> Đang nén ZIP...`;
-            const content = await zip.generateAsync({ type: 'blob' });
-
-            const startDate = document.getElementById('startDate').value.replace(/-/g, '');
-            const endDate = document.getElementById('endDate').value.replace(/-/g, '');
-            const filename = `ngay${startDate}den${endDate}.zip`;
-
-            saveAs(content, filename);
-        } catch (error) {
-            console.error('Lỗi khi tạo file ZIP:', error);
-            alert('Đã xảy ra lỗi trong quá trình tạo file ZIP. Vui lòng thử lại.');
-        } finally {
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = originalBtnText;
+                // Tô màu xen kẽ
+                if (index % 2 === 0) {
+                    row.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'F8F9FA' }
+                    };
+                }
+                
+                totalAmount += item.amount;
+                currentRow++;
+            });
+            
+            // Dòng tổng
+            const totalRow = worksheet.getRow(currentRow + 1);
+            worksheet.mergeCells(`A${currentRow + 1}:C${currentRow + 1}`);
+            const totalLabelCell = worksheet.getCell(`A${currentRow + 1}`);
+            totalLabelCell.value = 'TỔNG CỘNG:';
+            totalLabelCell.font = { bold: true, size: 12 };
+            totalLabelCell.alignment = { horizontal: 'right' };
+            
+            const totalAmountCell = worksheet.getCell(`D${currentRow + 1}`);
+            totalAmountCell.value = totalAmount;
+            totalAmountCell.numFmt = '#,##0"đ"';
+            totalAmountCell.font = { bold: true, size: 12, color: { argb: 'E74C3C' } };
+            totalAmountCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FDEDEC' }
+            };
+            
+            // Dòng trung bình
+            const avgRow = worksheet.getRow(currentRow + 2);
+            worksheet.mergeCells(`A${currentRow + 2}:C${currentRow + 2}`);
+            const avgLabelCell = worksheet.getCell(`A${currentRow + 2}`);
+            avgLabelCell.value = 'TRUNG BÌNH/NGÀY:';
+            avgLabelCell.font = { bold: true, size: 12 };
+            avgLabelCell.alignment = { horizontal: 'right' };
+            
+            const avgAmountCell = worksheet.getCell(`D${currentRow + 2}`);
+            avgAmountCell.value = totalAmount / data.length;
+            avgAmountCell.numFmt = '#,##0"đ"';
+            avgAmountCell.font = { bold: true, size: 12, color: { argb: '2ECC71' } };
+            avgAmountCell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'EAFAF1' }
+            };
+            
+            // Định dạng border
+            const dataRange = `A2:E${currentRow + 2}`;
+            worksheet.getCell('A1').border = {
+                bottom: { style: 'thin', color: { argb: '000000' } }
+            };
+            
+            const borderStyle = { style: 'thin', color: { argb: 'DDDDDD' } };
+            worksheet.eachRow((row, rowNumber) => {
+                row.eachCell((cell, colNumber) => {
+                    cell.border = {
+                        top: rowNumber > 2 ? borderStyle : undefined,
+                        left: colNumber > 1 ? borderStyle : undefined,
+                        bottom: borderStyle,
+                        right: borderStyle
+                    };
+                });
+            });
+            
+            // Thêm logo/tiêu đề công ty
+            worksheet.getCell('A1').note = `Xuất ngày: ${new Date().toLocaleDateString('vi-VN')}\nHệ thống Quản lý Mua hàng Pro`;
         }
-    }
-
-    // Export Payroll Excel - THAY THẾ BẰNG HÀM MỚI
-    function exportPayrollExcel(){ 
-        exportPayrollWithDetailSheets(); // Gọi hàm mới
-    }
-
-    // Hàm trợ giúp để tải file - giữ nguyên
-    function saveAs(blob, filename) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
-    }
-
-    // Init - giữ nguyên với cập nhật nền 3D
-    document.addEventListener('DOMContentLoaded', ()=>{
-        // Initial state
-        adminDashboardPanel.style.display = 'none'; 
-        personalAttendancePanel.style.display = 'none';
         
-        // Event listeners - giữ nguyên
-        document.getElementById('verifyAdmin').addEventListener('click', verifyAdmin);
-        document.getElementById('addEmployee').addEventListener('click', addEmployee);
-        document.getElementById('clearDataBtn').addEventListener('click', clearAttendance);
-        document.getElementById('forceLogoutAll').addEventListener('click', forceLogoutAll);
-        document.getElementById('saveSettings').addEventListener('click', saveSettings);
-        document.getElementById('loginBtn').addEventListener('click', login);
-        document.getElementById('loginByIdBtn').addEventListener('click', loginById);
-        document.getElementById('checkInBtn').addEventListener('click', checkIn);
-        document.getElementById('checkOutBtn').addEventListener('click', checkOut);
-
-        function handleEnterLogin(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById('loginBtn').click();
-            }
+        // Hàm tạo sheet Tổng hợp
+        async function createSummarySheet(workbook) {
+            const worksheet = workbook.addWorksheet('Tổng hợp');
+            
+            // Tiêu đề
+            worksheet.mergeCells('A1:E1');
+            const titleCell = worksheet.getCell('A1');
+            titleCell.value = 'TỔNG HỢP CHI TIÊU THEO THÁNG';
+            titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFF' } };
+            titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '9B59B6' } };
+            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            
+            // Header
+            worksheet.columns = [
+                { header: 'Tháng', key: 'month', width: 15 },
+                { header: 'Số Giao Dịch', key: 'count', width: 15 },
+                { header: 'Tổng Chi', key: 'total', width: 20 },
+                { header: 'Trung Bình', key: 'average', width: 20 },
+                { header: 'Cao Nhất', key: 'max', width: 20 }
+            ];
+            
+            const headerRow = worksheet.getRow(2);
+            headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
+            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '8E44AD' } };
+            headerRow.alignment = { horizontal: 'center' };
+            
+            // Dữ liệu theo tháng
+            const dataByMonth = groupDataByMonth();
+            const months = Object.keys(dataByMonth).sort((a, b) => a - b);
+            let rowNum = 3;
+            let grandTotal = 0;
+            let totalTransactions = 0;
+            
+            months.forEach(month => {
+                const data = dataByMonth[month];
+                const total = data.reduce((sum, item) => sum + item.amount, 0);
+                const average = Math.round(total / data.length);
+                const max = Math.max(...data.map(item => item.amount));
+                
+                const row = worksheet.getRow(rowNum);
+                row.getCell('month').value = `Tháng ${month}`;
+                row.getCell('count').value = data.length;
+                row.getCell('total').value = total;
+                row.getCell('average').value = average;
+                row.getCell('max').value = max;
+                
+                // Định dạng số
+                row.getCell('total').numFmt = '#,##0"đ"';
+                row.getCell('average').numFmt = '#,##0"đ"';
+                row.getCell('max').numFmt = '#,##0"đ"';
+                
+                // Tô màu xen kẽ
+                if (rowNum % 2 === 1) {
+                    row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F8F9FA' } };
+                }
+                
+                grandTotal += total;
+                totalTransactions += data.length;
+                rowNum++;
+            });
+            
+            // Dòng tổng
+            const totalRow = worksheet.getRow(rowNum + 1);
+            worksheet.mergeCells(`A${rowNum + 1}:B${rowNum + 1}`);
+            totalRow.getCell('A').value = 'TỔNG CỘNG:';
+            totalRow.getCell('A').font = { bold: true };
+            totalRow.getCell('A').alignment = { horizontal: 'right' };
+            
+            totalRow.getCell('C').value = grandTotal;
+            totalRow.getCell('C').numFmt = '#,##0"đ"';
+            totalRow.getCell('C').font = { bold: true, color: { argb: 'E74C3C' } };
+            totalRow.getCell('C').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FDEDEC' } };
+            
+            totalRow.getCell('D').value = Math.round(grandTotal / totalTransactions);
+            totalRow.getCell('D').numFmt = '#,##0"đ"';
+            totalRow.getCell('D').font = { bold: true, color: { argb: '2ECC71' } };
+            totalRow.getCell('D').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'EAFAF1' } };
+            
+            // Định dạng border
+            const dataRange = `A2:E${rowNum + 1}`;
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber >= 2) {
+                    row.eachCell((cell, colNumber) => {
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            left: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                        };
+                    });
+                }
+            });
         }
-        document.getElementById('loginUsername').addEventListener('keyup', handleEnterLogin);
-        document.getElementById('loginPassword').addEventListener('keyup', handleEnterLogin);
-        document.getElementById('adminCode').addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') { event.preventDefault(); document.getElementById('verifyAdmin').click(); }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', logout);
         
-        document.getElementById('submitLateRequestBtn').addEventListener('click', () => {
-            const reason = document.getElementById('lateReason').value.trim();
-            if (!reason) {
-                alert('Vui lòng nhập lý do xin phép đi muộn vào ô ghi chú.');
-                return;
-            }
-            alert('Đã ghi nhận yêu cầu của bạn. Vui lòng bấm nút "Vào" để chấm công. Lý do sẽ được lưu lại cùng với lần chấm công này.');
-        });
-        
-        document.getElementById('applyFilterBtn').addEventListener('click', populateAttendanceTable);
-        document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-        document.getElementById('computePayrollBtn').addEventListener('click', computePayroll);
-        document.getElementById('printPayrollBtn').addEventListener('click', () => generatePayslipHTML(payrollResults));
-        document.getElementById('downloadPayslipsZipBtn').addEventListener('click', downloadPayslipsAsZip);
-        document.getElementById('exportPayslipExcelBtn').addEventListener('click', exportPayrollExcel); // Đã được cập nhật
-
-        document.getElementById('startDate').valueAsDate = new Date(); 
-        document.getElementById('endDate').valueAsDate = new Date();
-
-        db.collection('meta').doc('session').onSnapshot(doc=>{
-            if(doc.exists && doc.data().forceLogoutAt){
-                const s = localStorage.getItem(SESSION_KEY);
-                if(s){
-                    const obj = JSON.parse(s);
-                    if(obj && doc.data().forceLogoutAt.toMillis() > (obj.loginAt||0)){
-                        localStorage.removeItem(SESSION_KEY);
-                        location.reload();
-                    }
+        // Hàm tạo sheet Thống kê
+        async function createStatisticsSheet(workbook) {
+            const worksheet = workbook.addWorksheet('Thống kê');
+            
+            // Tiêu đề
+            worksheet.mergeCells('A1:C1');
+            const titleCell = worksheet.getCell('A1');
+            titleCell.value = 'THỐNG KÊ CHI TIÊU';
+            titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFF' } };
+            titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2ECC71' } };
+            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            
+            // Thống kê cơ bản
+            const stats = calculateStatistics();
+            
+            worksheet.getCell('A3').value = 'Tổng số giao dịch:';
+            worksheet.getCell('B3').value = stats.count;
+            worksheet.getCell('A4').value = 'Tổng chi tiêu:';
+            worksheet.getCell('B4').value = stats.total;
+            worksheet.getCell('B4').numFmt = '#,##0"đ"';
+            worksheet.getCell('A5').value = 'Chi trung bình:';
+            worksheet.getCell('B5').value = stats.average;
+            worksheet.getCell('B5').numFmt = '#,##0"đ"';
+            worksheet.getCell('A6').value = 'Chi cao nhất:';
+            worksheet.getCell('B6').value = stats.max;
+            worksheet.getCell('B6').numFmt = '#,##0"đ"';
+            worksheet.getCell('A7').value = 'Chi thấp nhất:';
+            worksheet.getCell('B7').value = stats.min;
+            worksheet.getCell('B7').numFmt = '#,##0"đ"';
+            
+            // Định dạng
+            for (let i = 3; i <= 7; i++) {
+                const row = worksheet.getRow(i);
+                row.height = 25;
+                row.getCell('A').font = { bold: true };
+                row.getCell('B').font = { bold: true };
+                
+                if (i % 2 === 1) {
+                    row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F8F9FA' } };
                 }
             }
-        });
-
-        loadSettings();
-        loadEmployees();
-        loadAttendance();
-        setTimeout(()=>{ tryRestoreSession(); }, 800);
-
-        // THÊM MỚI: Khởi tạo hiệu ứng nền 3D Vanta.js CELLS
-        try {
-            VANTA.CELLS({
-                el: "#vanta-bg",
-                mouseControls: true,
-                touchControls: true,
-                gyroControls: false,
-                minHeight: 200.00,
-                minWidth: 200.00,
-                scale: 1.00,
-                scaleMobile: 1.00,
-                color1: 0x00e5ff,      // Màu chính của tế bào (xanh cyan)
-                color2: 0x2a5c8c,      // Màu phụ của tế bào (xanh đậm hơn)
-                backgroundColor: 0x000010, // Màu nền (đen-xanh đậm)
-                size: 3.00,
-                speed: 1.00
-            })
-        } catch (e) {
-            console.error("Lỗi khởi tạo Vanta.js:", e);
-            // Fallback nếu Vanta.js lỗi
-            document.body.style.backgroundColor = '#0c0a18';
+            
+            // Định dạng border
+            const range = `A3:B7`;
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber >= 3 && rowNumber <= 7) {
+                    row.eachCell((cell, colNumber) => {
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            left: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
+                            right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                        };
+                    });
+                }
+            });
+            
+            // Ghi chú
+            worksheet.getCell('A9').value = 'Ghi chú:';
+            worksheet.getCell('A9').font = { bold: true, italic: true };
+            worksheet.mergeCells('A10:C12');
+            worksheet.getCell('A10').value = `Báo cáo được tạo tự động bởi hệ thống Quản lý Mua hàng Pro.\nNgày xuất: ${new Date().toLocaleDateString('vi-VN')}\nThời gian: ${new Date().toLocaleTimeString('vi-VN')}`;
+            worksheet.getCell('A10').alignment = { wrapText: true };
+            worksheet.getCell('A10').font = { italic: true, color: { argb: '7F8C8D' } };
         }
-
-        // Khởi tạo ngôn ngữ
-        const savedLang = localStorage.getItem('language') || 'vi';
-        setLanguage(savedLang);
-    });
+        
+        // Hàm tính toán thống kê
+        function calculateStatistics() {
+            const amounts = purchaseData.map(item => item.amount);
+            const total = amounts.reduce((sum, amount) => sum + amount, 0);
+            const average = Math.round(total / amounts.length);
+            const max = Math.max(...amounts);
+            const min = Math.min(...amounts);
+            const count = amounts.length;
+            
+            return { total, average, max, min, count };
+        }
+        
+        // Hàm hiển thị thông báo
+        function showNotification(message, isError = false) {
+            exportNotification.style.background = isError ? 
+                'linear-gradient(135deg, #e74c3c, #c0392b)' : 
+                'linear-gradient(135deg, #2ecc71, #27ae60)';
+            
+            exportNotification.querySelector('.notification-title').textContent = 
+                isError ? 'Lỗi!' : 'Thành công!';
+            exportNotification.querySelector('.notification-message').textContent = message;
+            
+            exportNotification.style.display = 'flex';
+            
+            setTimeout(() => {
+                exportNotification.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Hàm xóa toàn bộ dữ liệu
+        function clearAllData() {
+            if (!confirm("Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu? Hành động này không thể hoàn tác!")) return;
+            
+            purchaseData = [];
+            saveDataToStorage();
+            renderPurchaseTable();
+            populateMonthFilter();
+            updateTotalAmount();
+            updateStatistics();
+            excelPreview.style.display = 'none';
+            
+            showNotification("Đã xóa toàn bộ dữ liệu thành công");
+            addMessageToChat("Hệ thống", "🗑️ Đã xóa toàn bộ dữ liệu mua hàng", "bot");
+        }
+        
+        // Hàm lưu dữ liệu vào Local Storage
+        function saveDataToStorage() {
+            localStorage.setItem('purchaseData', JSON.stringify(purchaseData));
+        }
+        
+        // Hàm tải dữ liệu từ Local Storage
+        function loadDataFromStorage() {
+            const storedPurchaseData = localStorage.getItem('purchaseData');
+            if (storedPurchaseData) {
+                purchaseData = JSON.parse(storedPurchaseData);
+                sortPurchaseData();
+            }
+            
+            // Thêm dữ liệu mẫu nếu không có dữ liệu
+            if (purchaseData.length === 0) {
+                const today = new Date();
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                const formatDate = (date) => {
+                    return `${date.getDate()}/${date.getMonth() + 1}`;
+                };
+                
+                purchaseData = [
+                    { id: 1, date: formatDate(yesterday), amount: 2345000, purpose: "Cồn sát khuẩn", originalAmount: 2345, month: getMonthFromDate(formatDate(yesterday)), year: today.getFullYear(), userId: 'demo' },
+                    { id: 2, date: formatDate(today), amount: 150000, purpose: "Cà phê sáng", originalAmount: 150, month: getMonthFromDate(formatDate(today)), year: today.getFullYear(), userId: 'demo' },
+                    { id: 3, date: formatDate(today), amount: 75000, purpose: "Xăng xe máy", originalAmount: 75, month: getMonthFromDate(formatDate(today)), year: today.getFullYear(), userId: 'demo' },
+                    { id: 4, date: "15/1", amount: 500000, purpose: "Ăn trưa với đối tác", originalAmount: 500, month: 1, year: today.getFullYear(), userId: 'demo' },
+                    { id: 5, date: "20/1", amount: 1200000, purpose: "Mua sách chuyên ngành", originalAmount: 1200, month: 1, year: today.getFullYear(), userId: 'demo' }
+                ];
+                
+                saveDataToStorage();
+            }
+            
+            // Hiển thị preview nếu có dữ liệu
+            if (purchaseData.length > 0) {
+                excelPreview.style.display = 'block';
+            }
+        }
+        
+        // Tạo ID người dùng duy nhất từ Local Storage
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
